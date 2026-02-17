@@ -131,3 +131,22 @@
   - The snooze duration change takes effect immediately for future snoozes because `scheduleSnoozeNotification` reads the current value from SettingsManager at snooze time (no need for Combine observation)
   - When adding new sections to a SwiftUI Form, remember to increase the `.frame(height:)` to prevent content from being clipped
 ---
+
+## 2026-02-17 - US-007: Launch at Startup
+- What was implemented:
+  - Added `launchAtLogin` published property to `SettingsManager` backed by `SMAppService.mainApp`
+  - Uses `SMAppService.mainApp.register()` / `.unregister()` to manage login item status
+  - Reads current status from `SMAppService.mainApp.status == .enabled` on init (no UserDefaults needed — system is source of truth)
+  - Added `guard launchAtLogin != oldValue` in `didSet` to prevent infinite loop on revert
+  - On failure, reverts to `oldValue` safely
+  - Added "General" section to `SettingsView` with a `Toggle("Launch at login")` bound to settings
+  - Increased settings window height from 260 to 320
+- Files changed:
+  - `ExerciseSnack/SettingsManager.swift` (modified — added ServiceManagement import, launchAtLogin property)
+  - `ExerciseSnack/SettingsView.swift` (modified — added General section with launch toggle, increased height)
+- **Learnings for future iterations:**
+  - `SMAppService.mainApp` (macOS 13+) is the modern way to register login items — no helper app needed
+  - The system status (`SMAppService.mainApp.status`) is the source of truth for login item state — don't duplicate in UserDefaults
+  - When using `didSet` that can revert the value on failure, add a `guard newValue != oldValue` to prevent infinite `didSet` loops
+  - `SMAppService` doesn't require any special entitlements for local development/debug builds
+---

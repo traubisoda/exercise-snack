@@ -109,7 +109,8 @@
         "Toggle state accurately reflects the current login item status"
       ],
       "priority": 7,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-008",

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import ServiceManagement
 
 class SettingsManager: ObservableObject {
     static let shared = SettingsManager()
@@ -22,6 +23,22 @@ class SettingsManager: ObservableObject {
         didSet { UserDefaults.standard.set(snoozeDuration, forKey: Keys.snoozeDuration) }
     }
 
+    @Published var launchAtLogin: Bool {
+        didSet {
+            guard launchAtLogin != oldValue else { return }
+            do {
+                if launchAtLogin {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                // Revert on failure
+                launchAtLogin = oldValue
+            }
+        }
+    }
+
     private init() {
         let defaults = UserDefaults.standard
 
@@ -35,5 +52,6 @@ class SettingsManager: ObservableObject {
         self.workStartHour = defaults.integer(forKey: Keys.workStartHour)
         self.workEndHour = defaults.integer(forKey: Keys.workEndHour)
         self.snoozeDuration = defaults.integer(forKey: Keys.snoozeDuration)
+        self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 }

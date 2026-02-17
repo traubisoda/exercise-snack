@@ -38,9 +38,13 @@ struct SettingsView: View {
                     Text("30 minutes").tag(30)
                 }
             }
+
+            Section("General") {
+                Toggle("Launch at login", isOn: $settings.launchAtLogin)
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 320, height: 260)
+        .frame(width: 320, height: 320)
         .fixedSize()
     }
 }
