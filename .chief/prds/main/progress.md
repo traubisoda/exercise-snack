@@ -2,6 +2,8 @@
 - See `.chief/prds/excercise-snack/progress.md` for comprehensive patterns
 - Reminder offset uses minutes-before-the-hour stored as Int in UserDefaults (0, 5, or 10)
 - Combine `combineLatest` can take up to 3 publishers — used for workStartHour + workEndHour + reminderOffset
+- `UNNotificationSettings.alertStyle` detects Alerts vs Banners — `.alert` means persistent, `.banner` means auto-dismiss
+- Use `x-apple.systempreferences:com.apple.Notifications-Settings.extension` URL to open Notifications settings pane
 
 ---
 

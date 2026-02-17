@@ -15,6 +15,19 @@ struct ExerciseSnackApp: App {
             Text(notificationManager.statusText)
                 .disabled(true)
 
+            if notificationManager.showAlertStylePrompt {
+                Divider()
+
+                Button("⚠ Notifications auto-dismiss. Click to fix...") {
+                    notificationManager.openNotificationSettings()
+                }
+
+                Button("Dismiss") {
+                    notificationManager.dismissAlertStylePrompt()
+                }
+                .font(.caption)
+            }
+
             Divider()
 
             Button("Settings...") {

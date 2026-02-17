@@ -33,7 +33,8 @@
         "The guidance prompt can be dismissed and does not reappear once the setting is correct"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     }
   ]
 }

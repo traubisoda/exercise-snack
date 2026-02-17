@@ -1,6 +1,7 @@
 import Foundation
 import UserNotifications
 import Combine
+import AppKit
 
 class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
@@ -10,6 +11,8 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     private static let snoozeAction = "SNOOZE"
 
     @Published var statusText: String = "No more reminders today"
+    /// Whether to show a guidance prompt telling the user to enable Alert-style notifications
+    @Published var showAlertStylePrompt: Bool = false
 
     private let center = UNUserNotificationCenter.current()
     private var cancellables = Set<AnyCancellable>()
@@ -56,6 +59,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             if granted {
                 DispatchQueue.main.async {
                     self.rescheduleNotifications()
+                    self.checkAlertStyle()
                 }
             }
         }
@@ -164,6 +168,8 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     // MARK: - Status
 
     func updateStatusText() {
+        checkAlertStyle()
+
         let settings = SettingsManager.shared
         let calendar = Calendar.current
         let now = Date()
@@ -259,6 +265,39 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
                 self?.updateStatusText()
             }
         }
+    }
+
+    // MARK: - Alert Style Detection
+
+    /// Check whether the app's notification style is set to Alerts (persistent) and update the prompt flag.
+    func checkAlertStyle() {
+        center.getNotificationSettings { [weak self] settings in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                let isAlertStyle = settings.alertStyle == .alert
+                if isAlertStyle {
+                    // Setting is correct — clear any previous dismissal and hide prompt
+                    UserDefaults.standard.removeObject(forKey: "alertStylePromptDismissed")
+                    self.showAlertStylePrompt = false
+                } else {
+                    let dismissed = UserDefaults.standard.bool(forKey: "alertStylePromptDismissed")
+                    self.showAlertStylePrompt = !dismissed
+                }
+            }
+        }
+    }
+
+    /// Open macOS System Settings to the Notifications pane for this app.
+    func openNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    /// Dismiss the alert style guidance prompt permanently.
+    func dismissAlertStylePrompt() {
+        UserDefaults.standard.set(true, forKey: "alertStylePromptDismissed")
+        showAlertStylePrompt = false
     }
 
     // MARK: - Notification Content
