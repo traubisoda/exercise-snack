@@ -32,7 +32,8 @@
         "Changing working hours immediately reschedules any pending notifications"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-003",
