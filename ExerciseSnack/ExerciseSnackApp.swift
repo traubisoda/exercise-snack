@@ -18,14 +18,33 @@ struct ExerciseSnackApp: App {
             if notificationManager.showAlertStylePrompt {
                 Divider()
 
-                Button("⚠ Notifications auto-dismiss. Click to fix...") {
+                Text("⚠ Notifications disappear before you")
+                    .disabled(true)
+                Text("  can tap \"Do it now\" or \"Snooze\".")
+                    .disabled(true)
+                Text("  To fix, change to Alerts style:")
+                    .disabled(true)
+
+                Divider()
+
+                Text("  1. Open System Settings")
+                    .disabled(true)
+                Text("  2. Go to Notifications")
+                    .disabled(true)
+                Text("  3. Find Exercise Snack")
+                    .disabled(true)
+                Text("  4. Change style: Banners → Alerts")
+                    .disabled(true)
+
+                Divider()
+
+                Button("Open Notification Settings") {
                     notificationManager.openNotificationSettings()
                 }
 
                 Button("Dismiss") {
                     notificationManager.dismissAlertStylePrompt()
                 }
-                .font(.caption)
             }
 
             Divider()
