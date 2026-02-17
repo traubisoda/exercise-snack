@@ -6,7 +6,9 @@
 - Use `x-apple.systempreferences:com.apple.Notifications-Settings.extension` URL to open Notifications settings pane
 - Custom notification sounds: bundle an .aiff file in Resources, reference with `UNNotificationSound(named: UNNotificationSoundName("filename.aiff"))`
 - The project now has a PBXResourcesBuildPhase (A6000002) — add resource files there (not PBXSourcesBuildPhase)
-- Next available pbxproj IDs: A1000007 (build file), A200000A (file ref)
+- Next available pbxproj IDs: A1000008 (build file), A200000B (file ref)
+- Asset catalogs use `lastKnownFileType = folder.assetcatalog` in PBXFileReference and go in PBXResourcesBuildPhase
+- For macOS 11+ app icons, provide full-bleed square PNGs (no rounded rect mask) — macOS applies the squircle mask automatically
 
 ---
 
@@ -64,4 +66,25 @@
   - System DND/Focus mode compliance is automatic — `UNUserNotificationCenter` handles sound suppression when Focus mode is active
   - macOS system sounds at `/System/Library/Sounds/` are good sources for pleasant, well-designed notification tones
   - Resource files need: PBXFileReference (with `lastKnownFileType = audio.aiff`), PBXBuildFile (in Resources), PBXGroup children entry, and PBXResourcesBuildPhase files entry
+---
+
+## 2026-02-17 - US-003: Application Logo
+- What was implemented:
+  - Created a custom app icon with a green gradient background, white running stick figure, and yellow lightning bolt accent
+  - Created `Assets.xcassets` with `AppIcon.appiconset` containing all 10 required macOS icon sizes (16x16 through 512x512@2x = 1024x1024)
+  - Added asset catalog to Xcode project (PBXFileReference, PBXBuildFile in Resources, PBXGroup, PBXResourcesBuildPhase)
+  - Build produces `AppIcon.icns` in the app bundle automatically from the asset catalog
+  - The icon is a full-bleed square PNG — macOS applies the rounded-rect (squircle) mask automatically
+- Files changed:
+  - `ExerciseSnack/Assets.xcassets/Contents.json` (new — asset catalog root)
+  - `ExerciseSnack/Assets.xcassets/AppIcon.appiconset/Contents.json` (new — icon set configuration with all 10 macOS sizes)
+  - `ExerciseSnack/Assets.xcassets/AppIcon.appiconset/icon_*.png` (new — 10 icon PNGs from 16x16 to 1024x1024)
+  - `ExerciseSnack.xcodeproj/project.pbxproj` (modified — added Assets.xcassets file reference and build file)
+- **Learnings for future iterations:**
+  - macOS app icons need 10 images: 5 sizes (16, 32, 128, 256, 512) × 2 scales (1x, 2x)
+  - For macOS 11+, provide full-bleed square images — the system applies the squircle mask; do NOT pre-apply a rounded-rect mask
+  - Asset catalogs use `lastKnownFileType = folder.assetcatalog` in PBXFileReference
+  - The `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` build setting was already configured — just needed the actual asset catalog
+  - Xcode compiles the asset catalog into `Assets.car` and `AppIcon.icns` in the app bundle automatically
+  - Pillow's `Image.resize()` with `Image.LANCZOS` produces high-quality downscaled icon variants from a 1024x1024 source
 ---

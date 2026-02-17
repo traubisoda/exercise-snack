@@ -13,6 +13,7 @@
 		A1000004 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* NotificationManager.swift */; };
 		A1000005 /* ExerciseSuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* ExerciseSuggestions.swift */; };
 		A1000006 /* chime.aiff in Resources */ = {isa = PBXBuildFile; fileRef = A2000009 /* chime.aiff */; };
+		A1000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200000A /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		A2000007 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		A2000008 /* ExerciseSuggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSuggestions.swift; sourceTree = "<group>"; };
 		A2000009 /* chime.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = chime.aiff; sourceTree = "<group>"; };
+		A200000A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +57,7 @@
 				A2000007 /* NotificationManager.swift */,
 				A2000008 /* ExerciseSuggestions.swift */,
 				A2000009 /* chime.aiff */,
+				A200000A /* Assets.xcassets */,
 				A2000002 /* Info.plist */,
 				A2000003 /* ExerciseSnack.entitlements */,
 			);
@@ -77,6 +80,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000006 /* chime.aiff in Resources */,
+				A1000007 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

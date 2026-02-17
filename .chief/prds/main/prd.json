@@ -44,7 +44,8 @@
         "The icon follows Apple's macOS icon design guidelines (rounded-rect shape, appropriate detail level)"
       ],
       "priority": 3,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     }
   ]
 }
