@@ -95,7 +95,7 @@
         "Changing snooze duration applies to future snoozes immediately"
       ],
       "priority": 6,
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-007",

@@ -28,9 +28,19 @@ struct SettingsView: View {
                         .font(.caption)
                 }
             }
+
+            Section("Snooze") {
+                Picker("Snooze Duration", selection: $settings.snoozeDuration) {
+                    Text("5 minutes").tag(5)
+                    Text("10 minutes").tag(10)
+                    Text("15 minutes").tag(15)
+                    Text("20 minutes").tag(20)
+                    Text("30 minutes").tag(30)
+                }
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 320, height: 180)
+        .frame(width: 320, height: 260)
         .fixedSize()
     }
 }

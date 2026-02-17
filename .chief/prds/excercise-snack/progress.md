@@ -117,3 +117,17 @@
   - `UNTimeIntervalNotificationTrigger` is simpler than calendar trigger for relative delays like snooze
   - Use unique UUID-based identifiers for snooze notifications to avoid replacing pending ones
 ---
+
+## 2026-02-17 - US-006: Snooze Duration Configuration
+- What was implemented:
+  - Added a "Snooze" section to `SettingsView` with a `Picker` offering 5, 10, 15, 20, and 30 minute options
+  - `SettingsManager` already had `snoozeDuration` as a `@Published` property persisted via UserDefaults (default 10 minutes) from US-002
+  - `NotificationManager.scheduleSnoozeNotification` already reads `SettingsManager.shared.snoozeDuration` from US-005
+  - Increased settings window height from 180 to 260 to accommodate the new section
+- Files changed:
+  - `ExerciseSnack/SettingsView.swift` (modified — added snooze duration picker section)
+- **Learnings for future iterations:**
+  - Previous stories had already wired up the `snoozeDuration` property in SettingsManager and its usage in NotificationManager — always check existing code before assuming new plumbing is needed
+  - The snooze duration change takes effect immediately for future snoozes because `scheduleSnoozeNotification` reads the current value from SettingsManager at snooze time (no need for Combine observation)
+  - When adding new sections to a SwiftUI Form, remember to increase the `.frame(height:)` to prevent content from being clipped
+---
