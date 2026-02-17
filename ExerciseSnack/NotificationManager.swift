@@ -301,6 +301,30 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         showAlertStylePrompt = false
     }
 
+    // MARK: - Test Notification
+
+    #if DEBUG
+    /// Immediately delivers a test notification using the standard format.
+    /// Does not interfere with regular scheduling.
+    func sendTestNotification() {
+        let message = MovementMessageProvider.shared.messagesForDay(count: 1).first!
+
+        let content = UNMutableNotificationContent()
+        content.title = notificationTitle()
+        content.body = message.message
+        content.sound = Self.chimeSound
+        content.categoryIdentifier = Self.categoryIdentifier
+
+        let request = UNNotificationRequest(
+            identifier: "exercise-snack-test-\(UUID().uuidString)",
+            content: content,
+            trigger: nil // nil trigger = deliver immediately
+        )
+
+        center.add(request)
+    }
+    #endif
+
     // MARK: - Notification Content
 
     private func notificationTitle() -> String {

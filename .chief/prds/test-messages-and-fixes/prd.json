@@ -27,7 +27,8 @@
         "The button is not present in Release/production builds"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     }
   ]
 }

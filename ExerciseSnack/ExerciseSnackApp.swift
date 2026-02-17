@@ -47,6 +47,14 @@ struct ExerciseSnackApp: App {
                 }
             }
 
+            #if DEBUG
+            Divider()
+
+            Button("Send Test Notification") {
+                notificationManager.sendTestNotification()
+            }
+            #endif
+
             Divider()
 
             Button("Settings...") {
