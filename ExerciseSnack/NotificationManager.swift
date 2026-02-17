@@ -127,13 +127,13 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
 
         guard !futureSlots.isEmpty else { return }
 
-        // Get non-repeating exercise suggestions for all future slots
-        let suggestions = ExerciseSuggestionProvider.shared.suggestionsForDay(count: futureSlots.count)
+        // Get non-repeating movement messages for all future slots
+        let messages = MovementMessageProvider.shared.messagesForDay(count: futureSlots.count)
 
         for (index, slot) in futureSlots.enumerated() {
             let content = UNMutableNotificationContent()
             content.title = notificationTitle()
-            content.body = suggestions[index].message
+            content.body = messages[index].message
             content.sound = Self.chimeSound
             content.categoryIdentifier = Self.categoryIdentifier
 

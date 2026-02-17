@@ -1,56 +1,60 @@
 import Foundation
 
-struct ExerciseSuggestion {
-    let exercise: String
+struct MovementMessage {
     let message: String
 }
 
-class ExerciseSuggestionProvider {
-    static let shared = ExerciseSuggestionProvider()
+class MovementMessageProvider {
+    static let shared = MovementMessageProvider()
 
-    private let suggestions: [ExerciseSuggestion] = [
-        ExerciseSuggestion(exercise: "10 squats", message: "Drop and give me 10 squats! Your body will thank you!"),
-        ExerciseSuggestion(exercise: "15 desk push-ups", message: "How about 15 desk push-ups? You've got this!"),
-        ExerciseSuggestion(exercise: "30-second plank", message: "Hold a 30-second plank — you're stronger than you think!"),
-        ExerciseSuggestion(exercise: "20 calf raises", message: "Time for 20 calf raises! Stand tall and feel the burn!"),
-        ExerciseSuggestion(exercise: "10 lunges per leg", message: "Do 10 lunges per leg — your future self will thank you!"),
-        ExerciseSuggestion(exercise: "30-second toe touch", message: "Stretch it out! Touch your toes and hold for 30 seconds!"),
-        ExerciseSuggestion(exercise: "15 jumping jacks", message: "Try 15 jumping jacks to get your blood pumping!"),
-        ExerciseSuggestion(exercise: "10 shoulder rolls each way", message: "Roll your shoulders 10 times each way — release that tension!"),
-        ExerciseSuggestion(exercise: "10 tricep dips", message: "Do 10 tricep dips on your chair! Arms of steel incoming!"),
-        ExerciseSuggestion(exercise: "2-minute walk", message: "Walk around for 2 minutes — every step counts!"),
-        ExerciseSuggestion(exercise: "20 high knees", message: "Pump out 20 high knees — feel that energy surge!"),
-        ExerciseSuggestion(exercise: "15 seated leg raises", message: "Try 15 seated leg raises — sneak in some core work!"),
+    private let messages: [MovementMessage] = [
+        MovementMessage(message: "Time to put on those dancing shoes and do your exercise snack!"),
+        MovementMessage(message: "Your chair is getting jealous of your standing desk impression!"),
+        MovementMessage(message: "Your skeleton called — it wants to be taken for a walk!"),
+        MovementMessage(message: "Plot twist: your body wasn't designed to be furniture!"),
+        MovementMessage(message: "Stand up and pretend you're looking for something important!"),
+        MovementMessage(message: "Wiggle break! Nobody's watching. Probably."),
+        MovementMessage(message: "Your muscles just filed a complaint with HR. Time to move!"),
+        MovementMessage(message: "This is your hourly reminder that you have legs. Use them!"),
+        MovementMessage(message: "Alert: your body has been in power-saving mode too long!"),
+        MovementMessage(message: "The floor misses your feet. Go say hello!"),
+        MovementMessage(message: "Sitting is so last hour. Standing is the new black!"),
+        MovementMessage(message: "Quick — move before your chair absorbs you permanently!"),
+        MovementMessage(message: "Your future self just texted. They said 'thanks for moving!'"),
+        MovementMessage(message: "Stretch like nobody's watching. Because they're not. Hopefully."),
+        MovementMessage(message: "Breaking news: local developer discovers they can move!"),
+        MovementMessage(message: "Time to shake it off! Taylor Swift would be proud."),
+        MovementMessage(message: "Exercise snack time! No calories, all the benefits."),
+        MovementMessage(message: "Your body's check engine light just came on. Time for a stretch!"),
     ]
 
-    /// Index of the last suggestion used today, to avoid consecutive repeats.
     private var lastUsedIndex: Int? = nil
     private var lastUsedDate: Date? = nil
 
     private init() {}
 
-    /// Returns an array of exercise suggestions for the given count,
-    /// ensuring no two consecutive suggestions are the same.
-    func suggestionsForDay(count: Int) -> [ExerciseSuggestion] {
+    /// Returns an array of movement messages for the given count,
+    /// ensuring no two consecutive messages are the same.
+    func messagesForDay(count: Int) -> [MovementMessage] {
         resetIfNewDay()
 
-        var result: [ExerciseSuggestion] = []
+        var result: [MovementMessage] = []
         for _ in 0..<count {
-            let suggestion = pickNonRepeating()
-            result.append(suggestion)
+            let msg = pickNonRepeating()
+            result.append(msg)
         }
         return result
     }
 
-    private func pickNonRepeating() -> ExerciseSuggestion {
+    private func pickNonRepeating() -> MovementMessage {
         var index: Int
         repeat {
-            index = Int.random(in: 0..<suggestions.count)
-        } while index == lastUsedIndex && suggestions.count > 1
+            index = Int.random(in: 0..<messages.count)
+        } while index == lastUsedIndex && messages.count > 1
 
         lastUsedIndex = index
         lastUsedDate = Date()
-        return suggestions[index]
+        return messages[index]
     }
 
     private func resetIfNewDay() {
