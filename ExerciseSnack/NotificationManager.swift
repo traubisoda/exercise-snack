@@ -9,9 +9,12 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     private static let doItNowAction = "DO_IT_NOW"
     private static let snoozeAction = "SNOOZE"
 
+    @Published var statusText: String = "No more reminders today"
+
     private let center = UNUserNotificationCenter.current()
     private var cancellables = Set<AnyCancellable>()
     private var midnightTimer: Timer?
+    private var statusTimer: Timer?
 
     private override init() {
         super.init()
@@ -70,10 +73,10 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             scheduleSnoozeNotification(from: response.notification)
         case Self.doItNowAction:
             // Fire-and-forget — just dismiss
-            break
+            updateStatusText()
         default:
             // Default action (tapped notification body) or dismiss — no follow-up
-            break
+            updateStatusText()
         }
         completionHandler()
     }
@@ -83,6 +86,10 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         center.removeAllPendingNotificationRequests()
         scheduleTodayNotifications()
         scheduleMidnightReschedule()
+        // Delay status update slightly so pending requests are registered
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.updateStatusText()
+        }
     }
 
     private func scheduleTodayNotifications() {
@@ -158,6 +165,76 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
 
+    // MARK: - Status
+
+    func updateStatusText() {
+        let settings = SettingsManager.shared
+        let calendar = Calendar.current
+        let now = Date()
+        let currentHour = calendar.component(.hour, from: now)
+
+        // Check if outside working hours
+        if currentHour < settings.workStartHour || currentHour >= settings.workEndHour {
+            statusText = "Outside working hours"
+            scheduleStatusTimer()
+            return
+        }
+
+        // Query pending notifications to find the next one
+        center.getPendingNotificationRequests { [weak self] requests in
+            guard let self = self else { return }
+
+            let snackRequests = requests.filter { $0.identifier.hasPrefix("exercise-snack") }
+
+            // Find the earliest fire date among pending notifications
+            var nextDate: Date?
+            for request in snackRequests {
+                if let calTrigger = request.trigger as? UNCalendarNotificationTrigger,
+                   let fireDate = calTrigger.nextTriggerDate(),
+                   fireDate > now {
+                    if nextDate == nil || fireDate < nextDate! {
+                        nextDate = fireDate
+                    }
+                } else if let timeTrigger = request.trigger as? UNTimeIntervalNotificationTrigger,
+                          let fireDate = timeTrigger.nextTriggerDate(),
+                          fireDate > now {
+                    if nextDate == nil || fireDate < nextDate! {
+                        nextDate = fireDate
+                    }
+                }
+            }
+
+            DispatchQueue.main.async {
+                if let nextDate = nextDate {
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "HH:mm"
+                    self.statusText = "Next reminder: \(formatter.string(from: nextDate))"
+                } else {
+                    self.statusText = "No more reminders today"
+                }
+                self.scheduleStatusTimer()
+            }
+        }
+    }
+
+    private func scheduleStatusTimer() {
+        statusTimer?.invalidate()
+
+        // Recalculate status at the top of the next minute
+        let calendar = Calendar.current
+        let now = Date()
+        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: now)
+        components.minute = (components.minute ?? 0) + 1
+        components.second = 0
+
+        guard let nextMinute = calendar.date(from: components) else { return }
+        let interval = nextMinute.timeIntervalSince(now)
+
+        statusTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+            self?.updateStatusText()
+        }
+    }
+
     // MARK: - Snooze
 
     private func scheduleSnoozeNotification(from notification: UNNotification) {
@@ -181,7 +258,11 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             trigger: trigger
         )
 
-        center.add(request)
+        center.add(request) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateStatusText()
+            }
+        }
     }
 
     // MARK: - Notification Content

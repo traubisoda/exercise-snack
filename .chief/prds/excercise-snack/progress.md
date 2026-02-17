@@ -150,3 +150,23 @@
   - When using `didSet` that can revert the value on failure, add a `guard newValue != oldValue` to prevent infinite `didSet` loops
   - `SMAppService` doesn't require any special entitlements for local development/debug builds
 ---
+
+## 2026-02-17 - US-008: Menu Bar Status Display
+- What was implemented:
+  - Added `@Published var statusText` property to `NotificationManager` for reactive status updates
+  - `updateStatusText()` queries `UNUserNotificationCenter.getPendingNotificationRequests` to find the next scheduled notification
+  - Shows "Next reminder: HH:mm" when reminders are scheduled, "No more reminders today" when none remain, "Outside working hours" when outside configured hours
+  - Status auto-updates via a per-minute timer (`scheduleStatusTimer()`) that fires at the top of each minute
+  - Status refreshes on: reschedule, notification fire (do it now / dismiss), snooze scheduled
+  - Added status text display at top of menu bar dropdown in `ExerciseSnackApp` using `Text` with `.disabled(true)` styling
+  - Changed `notificationManager` from `private let` to `@ObservedObject` so SwiftUI observes status changes
+- Files changed:
+  - `ExerciseSnack/NotificationManager.swift` (modified — added statusText, updateStatusText, scheduleStatusTimer, status update calls in reschedule/delegate/snooze)
+  - `ExerciseSnack/ExerciseSnackApp.swift` (modified — added status text display in menu, changed notificationManager to @ObservedObject)
+- **Learnings for future iterations:**
+  - `UNUserNotificationCenter.getPendingNotificationRequests` is async (completion handler) and must dispatch back to main thread for UI updates
+  - `UNCalendarNotificationTrigger.nextTriggerDate()` and `UNTimeIntervalNotificationTrigger.nextTriggerDate()` return the next fire date for a pending notification
+  - When calling `updateStatusText()` right after `center.add(request)`, add a small async delay (0.1s) so the requests are registered before querying pending requests
+  - `Text("...").disabled(true)` in a `MenuBarExtra` renders as a non-interactive, grayed-out label — good for status display
+  - A per-minute timer ensures status transitions (e.g., entering/leaving working hours, approaching next reminder) happen without user interaction
+---

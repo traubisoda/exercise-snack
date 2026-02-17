@@ -3,8 +3,8 @@ import SwiftUI
 @main
 struct ExerciseSnackApp: App {
     @ObservedObject private var settings = SettingsManager.shared
+    @ObservedObject private var notificationManager = NotificationManager.shared
     @Environment(\.openWindow) private var openWindow
-    private let notificationManager = NotificationManager.shared
 
     init() {
         NotificationManager.shared.requestPermission()
@@ -12,6 +12,11 @@ struct ExerciseSnackApp: App {
 
     var body: some Scene {
         MenuBarExtra("Exercise Snack", systemImage: "figure.run") {
+            Text(notificationManager.statusText)
+                .disabled(true)
+
+            Divider()
+
             Button("Settings...") {
                 openWindow(id: "settings")
                 NSApplication.shared.activate(ignoringOtherApps: true)
