@@ -4,6 +4,9 @@
 - Combine `combineLatest` can take up to 3 publishers — used for workStartHour + workEndHour + reminderOffset
 - `UNNotificationSettings.alertStyle` detects Alerts vs Banners — `.alert` means persistent, `.banner` means auto-dismiss
 - Use `x-apple.systempreferences:com.apple.Notifications-Settings.extension` URL to open Notifications settings pane
+- Custom notification sounds: bundle an .aiff file in Resources, reference with `UNNotificationSound(named: UNNotificationSoundName("filename.aiff"))`
+- The project now has a PBXResourcesBuildPhase (A6000002) — add resource files there (not PBXSourcesBuildPhase)
+- Next available pbxproj IDs: A1000007 (build file), A200000A (file ref)
 
 ---
 
@@ -43,4 +46,22 @@
   - Each `Text` item in a menu bar dropdown is inherently single-line, so multi-line content must be split across multiple `Text` items
   - `Divider()` between sections creates visual grouping within the menu
   - No need to switch to `.menuBarExtraStyle(.window)` for this use case — the standard menu style handles it well with multiple Text items
+---
+
+## 2026-02-17 - US-002: Notification Chime Sound
+- What was implemented:
+  - Bundled a pleasant chime sound (Glass.aiff from macOS system sounds) as `chime.aiff` in the app
+  - Added PBXResourcesBuildPhase to the Xcode project (the project previously had no resources phase)
+  - Replaced `UNNotificationSound.default` with `UNNotificationSound(named: "chime.aiff")` for both regular and snoozed notifications
+  - The chime plays automatically when notifications are delivered and respects system DND/Focus mode (handled by the notification framework)
+- Files changed:
+  - `ExerciseSnack/chime.aiff` (new — bundled Glass system sound, a gentle pleasant chime)
+  - `ExerciseSnack/NotificationManager.swift` (modified — added static chimeSound, replaced .default with custom sound)
+  - `ExerciseSnack.xcodeproj/project.pbxproj` (modified — added PBXResourcesBuildPhase, file reference, build file for chime.aiff)
+- **Learnings for future iterations:**
+  - The Xcode project originally had no PBXResourcesBuildPhase — it had to be created and added to the target's buildPhases list
+  - `UNNotificationSound(named: UNNotificationSoundName("filename.aiff"))` looks for the file in the app bundle's Resources directory
+  - System DND/Focus mode compliance is automatic — `UNUserNotificationCenter` handles sound suppression when Focus mode is active
+  - macOS system sounds at `/System/Library/Sounds/` are good sources for pleasant, well-designed notification tones
+  - Resource files need: PBXFileReference (with `lastKnownFileType = audio.aiff`), PBXBuildFile (in Resources), PBXGroup children entry, and PBXResourcesBuildPhase files entry
 ---

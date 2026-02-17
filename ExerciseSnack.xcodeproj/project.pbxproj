@@ -12,6 +12,7 @@
 		A1000003 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006 /* SettingsView.swift */; };
 		A1000004 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* NotificationManager.swift */; };
 		A1000005 /* ExerciseSuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* ExerciseSuggestions.swift */; };
+		A1000006 /* chime.aiff in Resources */ = {isa = PBXBuildFile; fileRef = A2000009 /* chime.aiff */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		A2000006 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A2000007 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		A2000008 /* ExerciseSuggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSuggestions.swift; sourceTree = "<group>"; };
+		A2000009 /* chime.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = chime.aiff; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +54,7 @@
 				A2000006 /* SettingsView.swift */,
 				A2000007 /* NotificationManager.swift */,
 				A2000008 /* ExerciseSuggestions.swift */,
+				A2000009 /* chime.aiff */,
 				A2000002 /* Info.plist */,
 				A2000003 /* ExerciseSnack.entitlements */,
 			);
@@ -68,6 +71,17 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXResourcesBuildPhase section */
+		A6000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000006 /* chime.aiff in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		A5000001 /* ExerciseSnack */ = {
 			isa = PBXNativeTarget;
@@ -75,6 +89,7 @@
 			buildPhases = (
 				A6000001 /* Sources */,
 				A3000001 /* Frameworks */,
+				A6000002 /* Resources */,
 			);
 			buildRules = (
 			);

@@ -9,6 +9,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     private static let categoryIdentifier = "EXERCISE_SNACK"
     private static let doItNowAction = "DO_IT_NOW"
     private static let snoozeAction = "SNOOZE"
+    private static let chimeSound = UNNotificationSound(named: UNNotificationSoundName("chime.aiff"))
 
     @Published var statusText: String = "No more reminders today"
     /// Whether to show a guidance prompt telling the user to enable Alert-style notifications
@@ -133,7 +134,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             let content = UNMutableNotificationContent()
             content.title = notificationTitle()
             content.body = suggestions[index].message
-            content.sound = .default
+            content.sound = Self.chimeSound
             content.categoryIdentifier = Self.categoryIdentifier
 
             let trigger = UNCalendarNotificationTrigger(

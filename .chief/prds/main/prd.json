@@ -29,7 +29,8 @@
         "The sound uses a bundled audio file or a system sound that fits the app's character"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-003",
