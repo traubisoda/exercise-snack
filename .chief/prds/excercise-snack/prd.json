@@ -50,7 +50,8 @@
         "Notification body suggests a specific exercise in an encouraging tone (e.g. \"Drop and give me 10 squats! Your body will thank you!\")"
       ],
       "priority": 3,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-004",

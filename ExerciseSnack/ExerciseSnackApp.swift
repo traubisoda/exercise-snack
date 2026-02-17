@@ -4,6 +4,11 @@ import SwiftUI
 struct ExerciseSnackApp: App {
     @ObservedObject private var settings = SettingsManager.shared
     @Environment(\.openWindow) private var openWindow
+    private let notificationManager = NotificationManager.shared
+
+    init() {
+        NotificationManager.shared.requestPermission()
+    }
 
     var body: some Scene {
         MenuBarExtra("Exercise Snack", systemImage: "figure.run") {

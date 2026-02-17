@@ -9,7 +9,9 @@
 - Settings persistence: `SettingsManager` singleton with `@Published` properties backed by `UserDefaults`
 - Settings window: Opened via `openWindow(id: "settings")` using a SwiftUI `Window` scene
 - When adding new .swift files: update 4 places in pbxproj (PBXBuildFile, PBXFileReference, PBXGroup children, PBXSourcesBuildPhase files)
-- Next available pbxproj IDs: A1000004 (build file), A2000007 (file ref)
+- Next available pbxproj IDs: A1000005 (build file), A2000008 (file ref)
+- Notifications: `NotificationManager` singleton handles UNUserNotificationCenter scheduling, permission requests, and daily rescheduling
+- NotificationManager observes SettingsManager changes via Combine and auto-reschedules
 
 ---
 
@@ -50,4 +52,26 @@
   - `UserDefaults.register(defaults:)` sets defaults without overwriting existing values — good for first-launch defaults
   - `.formStyle(.grouped)` gives macOS-native grouped form appearance in settings
   - The `SettingsManager.shared` singleton pattern allows any future component to observe settings changes via `@ObservedObject`
+---
+
+## 2026-02-17 - US-003: Hourly Notification Scheduling
+- What was implemented:
+  - Created `NotificationManager` singleton that uses `UNUserNotificationCenter` to schedule local notifications
+  - Requests notification permission on first launch (called from `ExerciseSnackApp.init()`)
+  - Schedules notifications at top of each hour within working hours (e.g., 9-17 → 10:00, 11:00, ..., 17:00)
+  - Only schedules future notifications for the current day (skips past hours)
+  - Reschedules daily via a midnight timer, and on settings changes via Combine observation
+  - Notification titles use encouraging tone (5 random variants)
+  - Notification bodies suggest specific exercises with encouraging messages (10 suggestions)
+  - Settings changes (working hours) trigger automatic rescheduling with debounce
+- Files changed:
+  - `ExerciseSnack/NotificationManager.swift` (new)
+  - `ExerciseSnack/ExerciseSnackApp.swift` (modified — added NotificationManager init and permission request)
+  - `ExerciseSnack.xcodeproj/project.pbxproj` (modified — added NotificationManager.swift)
+- **Learnings for future iterations:**
+  - `UNUserNotificationCenter` doesn't require any special entitlements for local notifications (no sandbox entitlement needed)
+  - Use `UNCalendarNotificationTrigger` with `repeats: false` for one-time date-based notifications
+  - Notification identifiers like `exercise-snack-{hour}` allow easy management of per-hour notifications
+  - Combine `$property.combineLatest()` with `.dropFirst().debounce()` is a clean pattern for reacting to settings changes without triggering on initial load
+  - `requestAuthorization` should be called early (app init) — scheduling only happens after permission is granted
 ---
