@@ -29,6 +29,14 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Notifications") {
+                Picker("Reminder offset", selection: $settings.reminderOffset) {
+                    Text("On the hour").tag(0)
+                    Text("5 minutes early").tag(5)
+                    Text("10 minutes early").tag(10)
+                }
+            }
+
             Section("Snooze") {
                 Picker("Snooze Duration", selection: $settings.snoozeDuration) {
                     Text("5 minutes").tag(5)
@@ -44,7 +52,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 320, height: 320)
+        .frame(width: 320, height: 400)
         .fixedSize()
     }
 }

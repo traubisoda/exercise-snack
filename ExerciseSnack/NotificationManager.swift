@@ -42,7 +42,7 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         // Observe settings changes to reschedule notifications
         let settings = SettingsManager.shared
         settings.$workStartHour
-            .combineLatest(settings.$workEndHour)
+            .combineLatest(settings.$workEndHour, settings.$reminderOffset)
             .dropFirst()
             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
             .sink { [weak self] _ in
@@ -96,40 +96,36 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         let settings = SettingsManager.shared
         let startHour = settings.workStartHour
         let endHour = settings.workEndHour
+        let offset = settings.reminderOffset
 
         guard endHour > startHour else { return }
 
         let calendar = Calendar.current
         let now = Date()
 
-        // Collect future hours to schedule
-        var futureHours: [Int] = []
+        // Collect future fire dates (hour label + actual fire date with offset applied)
+        var futureSlots: [(hour: Int, fireDate: Date)] = []
         for hour in (startHour + 1)...endHour {
             var components = calendar.dateComponents([.year, .month, .day], from: now)
             components.hour = hour
             components.minute = 0
             components.second = 0
 
-            guard let fireDate = calendar.date(from: components),
-                  fireDate > now else {
-                continue
-            }
-            futureHours.append(hour)
+            guard let baseDate = calendar.date(from: components) else { continue }
+
+            // Apply offset: fire `offset` minutes before the hour
+            let fireDate = baseDate.addingTimeInterval(TimeInterval(-offset * 60))
+
+            guard fireDate > now else { continue }
+            futureSlots.append((hour: hour, fireDate: fireDate))
         }
 
-        guard !futureHours.isEmpty else { return }
+        guard !futureSlots.isEmpty else { return }
 
-        // Get non-repeating exercise suggestions for all future hours
-        let suggestions = ExerciseSuggestionProvider.shared.suggestionsForDay(count: futureHours.count)
+        // Get non-repeating exercise suggestions for all future slots
+        let suggestions = ExerciseSuggestionProvider.shared.suggestionsForDay(count: futureSlots.count)
 
-        for (index, hour) in futureHours.enumerated() {
-            var components = calendar.dateComponents([.year, .month, .day], from: now)
-            components.hour = hour
-            components.minute = 0
-            components.second = 0
-
-            guard let fireDate = calendar.date(from: components) else { continue }
-
+        for (index, slot) in futureSlots.enumerated() {
             let content = UNMutableNotificationContent()
             content.title = notificationTitle()
             content.body = suggestions[index].message
@@ -137,12 +133,12 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             content.categoryIdentifier = Self.categoryIdentifier
 
             let trigger = UNCalendarNotificationTrigger(
-                dateMatching: calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: fireDate),
+                dateMatching: calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: slot.fireDate),
                 repeats: false
             )
 
             let request = UNNotificationRequest(
-                identifier: "exercise-snack-\(hour)",
+                identifier: "exercise-snack-\(slot.hour)",
                 content: content,
                 trigger: trigger
             )

@@ -1,0 +1,39 @@
+{
+  "project": "Notification Improvements",
+  "description": "Two quality-of-life improvements to exercise snack notifications: a configurable offset to shift reminders a few minutes before the top of the hour, so users can exercise before their next meeting starts, and persistent notifications that stay on screen until the user explicitly acts on them.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Notification Offset Configuration",
+      "description": "As a user, I want to configure my reminders to arrive a few minutes before the hour so that I can do my exercise snack before my next meeting starts.",
+      "acceptanceCriteria": [
+        "Settings window includes a \"Reminder offset\" picker in a new \"Notifications\" section",
+        "Available options: \"On the hour\" (0 min), \"5 minutes early\" (at :55), \"10 minutes early\" (at :50)",
+        "Default is \"On the hour\" (0 minutes) to preserve existing behavior",
+        "Setting is persisted using UserDefaults and survives app restarts",
+        "Changing the offset immediately reschedules all pending notifications for today",
+        "NotificationManager schedules notifications at (hour - offset) instead of exactly on the hour (e.g. with 5-min offset and working hours 9-17: notifications at 9:55, 10:55, ..., 16:55)",
+        "The menu bar status display correctly shows the offset time (e.g. \"Next reminder: 14:55\")",
+        "Snoozed notifications are unaffected by the offset (snooze is always a relative delay from the snooze action)"
+      ],
+      "priority": 1,
+      "passes": true,
+      "inProgress": false
+    },
+    {
+      "id": "US-002",
+      "title": "Persistent Notifications",
+      "description": "As a user, I want notifications to stay on screen until I click \"Do it now\" or \"Snooze\" so that I don't miss a reminder if I'm away from my Mac or focused on something else.",
+      "acceptanceCriteria": [
+        "On macOS, notification persistence (Alerts vs Banners) is a system-level setting that the app cannot control programmatically",
+        "The app detects whether its notification style is set to \"Alerts\" in System Settings",
+        "If notifications are set to \"Banners\" (auto-dismiss), the app shows a one-time prompt in the menu bar dropdown guiding the user to change the setting (e.g. \"Notifications auto-dismiss. Click here to fix.\" that opens System Settings \u003e Notifications \u003e Exercise Snack)",
+        "Clicking the prompt opens the macOS Notifications settings pane directly (using the x-apple.systempreferences: URL scheme or NSWorkspace.open)",
+        "Once the user has set notifications to \"Alerts\", the prompt no longer appears",
+        "The guidance prompt can be dismissed and does not reappear once the setting is correct"
+      ],
+      "priority": 2,
+      "passes": false
+    }
+  ]
+}

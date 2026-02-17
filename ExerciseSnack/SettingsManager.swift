@@ -9,6 +9,7 @@ class SettingsManager: ObservableObject {
         static let workStartHour = "workStartHour"
         static let workEndHour = "workEndHour"
         static let snoozeDuration = "snoozeDuration"
+        static let reminderOffset = "reminderOffset"
     }
 
     @Published var workStartHour: Int {
@@ -21,6 +22,11 @@ class SettingsManager: ObservableObject {
 
     @Published var snoozeDuration: Int {
         didSet { UserDefaults.standard.set(snoozeDuration, forKey: Keys.snoozeDuration) }
+    }
+
+    /// Minutes before the hour to fire reminders (0, 5, or 10)
+    @Published var reminderOffset: Int {
+        didSet { UserDefaults.standard.set(reminderOffset, forKey: Keys.reminderOffset) }
     }
 
     @Published var launchAtLogin: Bool {
@@ -46,12 +52,14 @@ class SettingsManager: ObservableObject {
         defaults.register(defaults: [
             Keys.workStartHour: 9,
             Keys.workEndHour: 17,
-            Keys.snoozeDuration: 10
+            Keys.snoozeDuration: 10,
+            Keys.reminderOffset: 0
         ])
 
         self.workStartHour = defaults.integer(forKey: Keys.workStartHour)
         self.workEndHour = defaults.integer(forKey: Keys.workEndHour)
         self.snoozeDuration = defaults.integer(forKey: Keys.snoozeDuration)
+        self.reminderOffset = defaults.integer(forKey: Keys.reminderOffset)
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 }
