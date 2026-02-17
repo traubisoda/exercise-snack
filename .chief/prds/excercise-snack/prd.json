@@ -65,7 +65,8 @@
         "Avoid repeating the same exercise in consecutive notifications within a day"
       ],
       "priority": 4,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-005",

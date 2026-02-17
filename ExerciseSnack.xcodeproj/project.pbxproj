@@ -11,6 +11,7 @@
 		A1000002 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005 /* SettingsManager.swift */; };
 		A1000003 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006 /* SettingsView.swift */; };
 		A1000004 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* NotificationManager.swift */; };
+		A1000005 /* ExerciseSuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* ExerciseSuggestions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		A2000005 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		A2000006 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A2000007 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		A2000008 /* ExerciseSuggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSuggestions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +51,7 @@
 				A2000005 /* SettingsManager.swift */,
 				A2000006 /* SettingsView.swift */,
 				A2000007 /* NotificationManager.swift */,
+				A2000008 /* ExerciseSuggestions.swift */,
 				A2000002 /* Info.plist */,
 				A2000003 /* ExerciseSnack.entitlements */,
 			);
@@ -119,6 +122,7 @@
 				A1000002 /* SettingsManager.swift in Sources */,
 				A1000003 /* SettingsView.swift in Sources */,
 				A1000004 /* NotificationManager.swift in Sources */,
+				A1000005 /* ExerciseSuggestions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

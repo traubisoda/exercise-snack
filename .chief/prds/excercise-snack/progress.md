@@ -9,7 +9,8 @@
 - Settings persistence: `SettingsManager` singleton with `@Published` properties backed by `UserDefaults`
 - Settings window: Opened via `openWindow(id: "settings")` using a SwiftUI `Window` scene
 - When adding new .swift files: update 4 places in pbxproj (PBXBuildFile, PBXFileReference, PBXGroup children, PBXSourcesBuildPhase files)
-- Next available pbxproj IDs: A1000005 (build file), A2000008 (file ref)
+- Next available pbxproj IDs: A1000006 (build file), A2000009 (file ref)
+- Exercise suggestions: `ExerciseSuggestionProvider` singleton provides non-repeating exercise selection via `suggestionsForDay(count:)`
 - Notifications: `NotificationManager` singleton handles UNUserNotificationCenter scheduling, permission requests, and daily rescheduling
 - NotificationManager observes SettingsManager changes via Combine and auto-reschedules
 
@@ -74,4 +75,22 @@
   - Notification identifiers like `exercise-snack-{hour}` allow easy management of per-hour notifications
   - Combine `$property.combineLatest()` with `.dropFirst().debounce()` is a clean pattern for reacting to settings changes without triggering on initial load
   - `requestAuthorization` should be called early (app init) — scheduling only happens after permission is granted
+---
+
+## 2026-02-17 - US-004: Exercise Suggestions
+- What was implemented:
+  - Created `ExerciseSuggestions.swift` with `ExerciseSuggestion` struct and `ExerciseSuggestionProvider` singleton
+  - Provider contains 12 exercises with specific rep counts and encouraging messages
+  - `suggestionsForDay(count:)` returns non-repeating consecutive exercise selections
+  - Tracks last used index per day to avoid consecutive repeats
+  - Updated `NotificationManager.scheduleTodayNotifications()` to pre-generate all suggestions for the day at once using the provider, ensuring no consecutive repeats
+  - Removed old inline `notificationBody()` method from NotificationManager
+- Files changed:
+  - `ExerciseSnack/ExerciseSuggestions.swift` (new)
+  - `ExerciseSnack/NotificationManager.swift` (modified — uses ExerciseSuggestionProvider instead of inline suggestions)
+  - `ExerciseSnack.xcodeproj/project.pbxproj` (modified — added ExerciseSuggestions.swift)
+- **Learnings for future iterations:**
+  - When extracting functionality into a new file, the old code in NotificationManager can be simplified by pre-generating all needed values before the scheduling loop
+  - The non-repeating pattern uses a simple `lastUsedIndex` tracker with a repeat-until-different loop — works well when the pool is large enough (>1 item)
+  - Remember to increment the "next available pbxproj IDs" in Codebase Patterns after consuming an ID pair
 ---

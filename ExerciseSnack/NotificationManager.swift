@@ -49,10 +49,9 @@ class NotificationManager: ObservableObject {
         let calendar = Calendar.current
         let now = Date()
 
-        // Notifications fire at the top of each hour within working hours.
-        // For working hours 9-17, notifications are at: 10, 11, 12, 13, 14, 15, 16, 17
+        // Collect future hours to schedule
+        var futureHours: [Int] = []
         for hour in (startHour + 1)...endHour {
-            // Build date components for today at this hour
             var components = calendar.dateComponents([.year, .month, .day], from: now)
             components.hour = hour
             components.minute = 0
@@ -60,12 +59,27 @@ class NotificationManager: ObservableObject {
 
             guard let fireDate = calendar.date(from: components),
                   fireDate > now else {
-                continue // Skip past notifications
+                continue
             }
+            futureHours.append(hour)
+        }
+
+        guard !futureHours.isEmpty else { return }
+
+        // Get non-repeating exercise suggestions for all future hours
+        let suggestions = ExerciseSuggestionProvider.shared.suggestionsForDay(count: futureHours.count)
+
+        for (index, hour) in futureHours.enumerated() {
+            var components = calendar.dateComponents([.year, .month, .day], from: now)
+            components.hour = hour
+            components.minute = 0
+            components.second = 0
+
+            guard let fireDate = calendar.date(from: components) else { continue }
 
             let content = UNMutableNotificationContent()
             content.title = notificationTitle()
-            content.body = notificationBody()
+            content.body = suggestions[index].message
             content.sound = .default
 
             let trigger = UNCalendarNotificationTrigger(
@@ -110,19 +124,4 @@ class NotificationManager: ObservableObject {
         return titles.randomElement()!
     }
 
-    private func notificationBody() -> String {
-        let suggestions = [
-            "Drop and give me 10 squats! Your body will thank you!",
-            "How about 15 desk push-ups? You've got this!",
-            "Hold a 30-second plank — you're stronger than you think!",
-            "Time for 20 calf raises! Stand tall and feel the burn!",
-            "Do 10 lunges per leg — your future self will thank you!",
-            "Stretch it out! Touch your toes and hold for 30 seconds!",
-            "Try 15 jumping jacks to get your blood pumping!",
-            "Roll your shoulders 10 times each way — release that tension!",
-            "Do 10 tricep dips on your chair! Arms of steel incoming!",
-            "Walk around for 2 minutes — every step counts!",
-        ]
-        return suggestions.randomElement()!
-    }
 }
