@@ -13,6 +13,8 @@
 - Exercise suggestions: `ExerciseSuggestionProvider` singleton provides non-repeating exercise selection via `suggestionsForDay(count:)`
 - Notifications: `NotificationManager` singleton handles UNUserNotificationCenter scheduling, permission requests, and daily rescheduling
 - NotificationManager observes SettingsManager changes via Combine and auto-reschedules
+- Notification actions: category `EXERCISE_SNACK` with actions `DO_IT_NOW` and `SNOOZE` registered in NotificationManager init
+- NotificationManager is the `UNUserNotificationCenterDelegate` (set in its init); extends `NSObject` for delegate conformance
 
 ---
 
@@ -93,4 +95,25 @@
   - When extracting functionality into a new file, the old code in NotificationManager can be simplified by pre-generating all needed values before the scheduling loop
   - The non-repeating pattern uses a simple `lastUsedIndex` tracker with a repeat-until-different loop — works well when the pool is large enough (>1 item)
   - Remember to increment the "next available pbxproj IDs" in Codebase Patterns after consuming an ID pair
+---
+
+## 2026-02-17 - US-005: Notification Actions — Acknowledge and Snooze
+- What was implemented:
+  - Added `UNUserNotificationCenterDelegate` conformance to `NotificationManager` (now extends `NSObject`)
+  - Registered a notification category `EXERCISE_SNACK` with two actions: "Do it now" and "Snooze"
+  - Set `categoryIdentifier` on all scheduled notification content so action buttons appear
+  - Implemented `didReceive response` delegate method to handle action taps
+  - "Do it now" simply dismisses (fire-and-forget, no tracking)
+  - "Snooze" schedules a new notification after the configured snooze duration with the same exercise message
+  - Snoozed notifications use `UNTimeIntervalNotificationTrigger` with a unique identifier to avoid conflicts
+  - Default action (tapping body) or dismiss (swiping away) produces no follow-up
+- Files changed:
+  - `ExerciseSnack/NotificationManager.swift` (modified — added NSObject inheritance, delegate, category registration, snooze scheduling)
+- **Learnings for future iterations:**
+  - `UNNotificationCategory` with `UNNotificationAction` is how you add custom buttons to macOS/iOS notifications
+  - The `categoryIdentifier` must be set on `UNMutableNotificationContent` for the actions to appear
+  - `UNUserNotificationCenterDelegate.didReceive response` handles all action taps; use `response.actionIdentifier` to distinguish
+  - The original notification content (title, body) is accessible via `response.notification.request.content` — useful for carrying forward the same exercise in snoozed notifications
+  - `UNTimeIntervalNotificationTrigger` is simpler than calendar trigger for relative delays like snooze
+  - Use unique UUID-based identifiers for snooze notifications to avoid replacing pending ones
 ---

@@ -2,14 +2,40 @@ import Foundation
 import UserNotifications
 import Combine
 
-class NotificationManager: ObservableObject {
+class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
+
+    private static let categoryIdentifier = "EXERCISE_SNACK"
+    private static let doItNowAction = "DO_IT_NOW"
+    private static let snoozeAction = "SNOOZE"
 
     private let center = UNUserNotificationCenter.current()
     private var cancellables = Set<AnyCancellable>()
     private var midnightTimer: Timer?
 
-    private init() {
+    private override init() {
+        super.init()
+
+        // Register notification category with actions
+        let doItNow = UNNotificationAction(
+            identifier: Self.doItNowAction,
+            title: "Do it now",
+            options: []
+        )
+        let snooze = UNNotificationAction(
+            identifier: Self.snoozeAction,
+            title: "Snooze",
+            options: []
+        )
+        let category = UNNotificationCategory(
+            identifier: Self.categoryIdentifier,
+            actions: [doItNow, snooze],
+            intentIdentifiers: [],
+            options: []
+        )
+        center.setNotificationCategories([category])
+        center.delegate = self
+
         // Observe settings changes to reschedule notifications
         let settings = SettingsManager.shared
         settings.$workStartHour
@@ -30,6 +56,26 @@ class NotificationManager: ObservableObject {
                 }
             }
         }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        switch response.actionIdentifier {
+        case Self.snoozeAction:
+            scheduleSnoozeNotification(from: response.notification)
+        case Self.doItNowAction:
+            // Fire-and-forget — just dismiss
+            break
+        default:
+            // Default action (tapped notification body) or dismiss — no follow-up
+            break
+        }
+        completionHandler()
     }
 
     func rescheduleNotifications() {
@@ -81,6 +127,7 @@ class NotificationManager: ObservableObject {
             content.title = notificationTitle()
             content.body = suggestions[index].message
             content.sound = .default
+            content.categoryIdentifier = Self.categoryIdentifier
 
             let trigger = UNCalendarNotificationTrigger(
                 dateMatching: calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: fireDate),
@@ -109,6 +156,32 @@ class NotificationManager: ObservableObject {
         midnightTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
             self?.rescheduleNotifications()
         }
+    }
+
+    // MARK: - Snooze
+
+    private func scheduleSnoozeNotification(from notification: UNNotification) {
+        let originalContent = notification.request.content
+        let snoozeDuration = SettingsManager.shared.snoozeDuration
+
+        let content = UNMutableNotificationContent()
+        content.title = originalContent.title
+        content.body = originalContent.body
+        content.sound = .default
+        content.categoryIdentifier = Self.categoryIdentifier
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: TimeInterval(snoozeDuration * 60),
+            repeats: false
+        )
+
+        let request = UNNotificationRequest(
+            identifier: "exercise-snack-snooze-\(UUID().uuidString)",
+            content: content,
+            trigger: trigger
+        )
+
+        center.add(request)
     }
 
     // MARK: - Notification Content

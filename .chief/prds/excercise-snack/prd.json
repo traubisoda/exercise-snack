@@ -80,7 +80,8 @@
         "If the notification is dismissed without clicking either button (e.g. swiped away), no follow-up occurs"
       ],
       "priority": 5,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-006",
