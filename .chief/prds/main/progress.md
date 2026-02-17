@@ -26,3 +26,21 @@
   - Snooze is naturally unaffected because it uses `UNTimeIntervalNotificationTrigger` (relative delay), not calendar-based scheduling
   - `combineLatest` on `Publisher` supports up to 3 publishers natively (no need for nested combineLatest)
 ---
+
+## 2026-02-17 - US-001: Fully Visible Notification Style Warning with Step-by-Step Instructions
+- What was implemented:
+  - Replaced the single truncated button ("⚠ Notifications auto-dismiss. Click to fix...") with a multi-line warning display in the menu bar dropdown
+  - Warning now shows the problem explanation: "Notifications disappear before you can tap 'Do it now' or 'Snooze'"
+  - Added numbered step-by-step instructions: 1) Open System Settings, 2) Go to Notifications, 3) Find Exercise Snack, 4) Change style: Banners → Alerts
+  - Each line uses a `Text` view with `.disabled(true)` for non-interactive display in the standard menu
+  - Dividers separate the problem description, instructions, and action buttons
+  - Renamed button from truncated text to clear "Open Notification Settings"
+  - "Dismiss" button remains available
+- Files changed:
+  - `ExerciseSnack/ExerciseSnackApp.swift` (modified — replaced single warning button with multi-line Text items and clear action buttons)
+- **Learnings for future iterations:**
+  - In a standard `MenuBarExtra` (menu style), `Text("...").disabled(true)` renders as non-interactive disabled menu items — useful for displaying multi-line informational content
+  - Each `Text` item in a menu bar dropdown is inherently single-line, so multi-line content must be split across multiple `Text` items
+  - `Divider()` between sections creates visual grouping within the menu
+  - No need to switch to `.menuBarExtraStyle(.window)` for this use case — the standard menu style handles it well with multiple Text items
+---
