@@ -67,5 +67,6 @@ struct ExerciseSnackApp: App {
             SettingsView()
         }
         .windowResizability(.contentSize)
+        .windowToolbarStyle(.unified(showsTitle: true))
     }
 }

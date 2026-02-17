@@ -54,5 +54,6 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 320, height: 400)
         .fixedSize()
+        .toolbarBackground(.visible, for: .windowToolbar)
     }
 }
