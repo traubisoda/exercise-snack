@@ -9,6 +9,7 @@
 - Next available pbxproj IDs: A1000008 (build file), A200000B (file ref)
 - Asset catalogs use `lastKnownFileType = folder.assetcatalog` in PBXFileReference and go in PBXResourcesBuildPhase
 - For macOS 11+ app icons, provide full-bleed square PNGs (no rounded rect mask) — macOS applies the squircle mask automatically
+- Movement messages: `MovementMessageProvider.shared` in `ExerciseSuggestions.swift`, notification titles: `notificationTitle()` in `NotificationManager.swift`
 
 ---
 
@@ -87,4 +88,22 @@
   - The `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` build setting was already configured — just needed the actual asset catalog
   - Xcode compiles the asset catalog into `Assets.car` and `AppIcon.icns` in the app bundle automatically
   - Pillow's `Image.resize()` with `Image.LANCZOS` produces high-quality downscaled icon variants from a 1024x1024 source
+---
+
+## 2026-02-17 - US-001: Replace Exercise-Specific Messages with General Movement Messages
+- What was implemented:
+  - Renamed `ExerciseSuggestion` struct to `MovementMessage`, removed `exercise` field, kept only `message`
+  - Renamed `ExerciseSuggestionProvider` to `MovementMessageProvider`, renamed `suggestionsForDay()` to `messagesForDay()`
+  - Replaced 12 exercise-specific messages (with rep counts and exercise names) with 18 funny, general movement encouragement messages
+  - Updated `NotificationManager.scheduleTodayNotifications()` to use `MovementMessageProvider.shared.messagesForDay()`
+  - Non-repeating selection logic preserved unchanged (lastUsedIndex/lastUsedDate pattern)
+  - Notification titles unchanged (same `notificationTitle()` method)
+  - Snooze forwarding unchanged (copies `originalContent.body` from the original notification)
+- Files changed:
+  - `ExerciseSnack/ExerciseSuggestions.swift` (modified — renamed struct/class, replaced all messages)
+  - `ExerciseSnack/NotificationManager.swift` (modified — updated to use MovementMessageProvider)
+- **Learnings for future iterations:**
+  - The snooze notification forwarding (`scheduleSnoozeNotification`) copies title/body from the original notification content, so message changes are automatically carried forward — no snooze-specific code changes needed
+  - The notification titles are defined in `NotificationManager.notificationTitle()`, separate from the body messages — easy to change independently
+  - The `ExerciseSuggestions.swift` filename was kept (not renamed) to avoid pbxproj changes — the file's internal types were renamed instead
 ---

@@ -1,49 +1,21 @@
 {
-  "project": "Menu Bar UX \u0026 Notification Improvements",
-  "description": "Three improvements to make Exercise Snack more polished and effective: make the notification-style warning in the menu bar dropdown fully readable with clear step-by-step fix instructions, add a chime sound to notifications so they grab the user's attention, and replace the default app icon placeholder with a proper application logo.",
+  "project": "General Movement Notification Messages",
+  "description": "Replace the current exercise-specific notification messages (e.g. \"Drop and give me 10 squats!\") with funny, general movement encouragement messages that don't reference specific exercises. The notification titles remain unchanged.",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Fully Visible Notification Style Warning with Step-by-Step Instructions",
-      "description": "As a user, I want the notification-style warning in the menu bar dropdown to display its full text without truncation, with clear step-by-step instructions on how to enable persistent notifications, so I know exactly what to do.",
+      "title": "Replace Exercise-Specific Messages with General Movement Messages",
+      "description": "As a user, I want notification messages that encourage general movement in a funny, lighthearted tone so that I feel motivated to take a break without being told exactly what exercise to do.",
       "acceptanceCriteria": [
-        "The warning message is fully visible in the menu bar dropdown — no ellipsis or text truncation",
-        "The message explains the problem: notifications disappear before the user can act on them (tap \"Do it now\" / \"Snooze\")",
-        "The message includes numbered step-by-step instructions: 1) Open System Settings, 2) Go to Notifications, 3) Find Exercise Snack, 4) Change notification style from \"Banners\" to \"Alerts\"",
-        "The layout accommodates the longer text comfortably (e.g. multi-line label, wider popover, or expandable section)",
-        "The \"Open Notification Settings\" button still opens the correct System Settings pane",
-        "The \"Dismiss\" button remains available"
+        "Notification bodies no longer reference specific exercises or rep counts",
+        "At least 15 funny, encouraging general movement messages are provided (e.g. \"Time to put on those dancing shoes and do your exercise snack!\", \"Your chair is getting jealous of your standing desk impression!\")",
+        "Messages use a funny, lighthearted, encouraging tone",
+        "The `ExerciseSuggestion` struct is simplified — remove the `exercise` field, keep only the `message` field (or rename the struct to reflect its new purpose)",
+        "The non-repeating selection logic (no consecutive duplicate messages within a day) is preserved",
+        "Notification titles remain unchanged (\"Time to move!\", \"Exercise snack time!\", etc.)",
+        "Snoozed notifications still carry forward the same message from the original notification"
       ],
       "priority": 1,
-      "passes": true,
-      "inProgress": false
-    },
-    {
-      "id": "US-002",
-      "title": "Notification Chime Sound",
-      "description": "As a user, I want exercise notifications to play a pleasant chime sound when they appear, so they grab my attention even if I'm not looking at the screen.",
-      "acceptanceCriteria": [
-        "Notifications play a chime sound when delivered",
-        "The chime is a short, pleasant, non-jarring tone appropriate for a wellness app",
-        "The sound respects the system Do Not Disturb / Focus mode settings",
-        "The sound uses a bundled audio file or a system sound that fits the app's character"
-      ],
-      "priority": 2,
-      "passes": true,
-      "inProgress": false
-    },
-    {
-      "id": "US-003",
-      "title": "Application Logo",
-      "description": "As a user, I want Exercise Snack to have a proper app icon instead of the default placeholder, so the app looks polished in the Dock, Finder, and menu bar.",
-      "acceptanceCriteria": [
-        "A custom app icon is designed that reflects the app's purpose (exercise + snack-sized breaks)",
-        "The icon is set as the app's icon in the asset catalog (AppIcon in Assets.xcassets)",
-        "The icon displays correctly in the Dock, Finder, Spotlight, and About dialog",
-        "The icon includes all required sizes for macOS (16x16 through 1024x1024)",
-        "The icon follows Apple's macOS icon design guidelines (rounded-rect shape, appropriate detail level)"
-      ],
-      "priority": 3,
       "passes": true,
       "inProgress": false
     }
