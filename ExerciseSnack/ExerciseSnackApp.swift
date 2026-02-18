@@ -11,7 +11,7 @@ struct ExerciseSnackApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Exercise Snack", systemImage: "figure.run") {
+        MenuBarExtra("Exercise Snack", image: "MenuBarIcon") {
             Text(notificationManager.statusText)
                 .disabled(true)
 

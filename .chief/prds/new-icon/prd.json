@@ -28,7 +28,8 @@
         "The MenuBarExtra in ExerciseSnackApp.swift references the new icon"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-003",
