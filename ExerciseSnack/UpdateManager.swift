@@ -5,8 +5,17 @@ class UpdateManager {
     static let shared = UpdateManager()
 
     private var isChecking = false
+    private var periodicTimer: Timer?
 
-    private init() {}
+    private init() {
+        startPeriodicChecks()
+    }
+
+    private func startPeriodicChecks() {
+        periodicTimer = Timer.scheduledTimer(withTimeInterval: 4 * 60 * 60, repeats: true) { [weak self] _ in
+            self?.checkForUpdates(userInitiated: false)
+        }
+    }
 
     func checkForUpdates(userInitiated: Bool) {
         guard !isChecking else { return }
