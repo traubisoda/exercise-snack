@@ -7,6 +7,8 @@
 - Menu bar icons use a separate generator script (`generate_menubar_icon.swift`) with monochrome design
 - Menu bar template images: set `template-rendering-intent: template` in Contents.json for automatic light/dark mode
 - MenuBarExtra uses `image:` parameter (not `systemImage:`) for custom asset catalog images
+- Notifications: use `UNUserNotificationCenter.removeAllPendingNotificationRequests()` + `removeAllDeliveredNotifications()` for full cleanup
+- App lifecycle: observe `NSApplication.willTerminateNotification` in NotificationManager for cleanup on quit (no AppDelegate needed)
 
 ---
 
@@ -49,4 +51,22 @@
   - `MenuBarExtra("title", image: "AssetName")` uses asset catalog images; `systemImage:` is for SF Symbols only
   - Menu bar icons should be ~18x18 points (provide @1x and @2x); the design base was 36px scaled with `size / 36.0`
   - Even at small sizes (18px), the bitten-donut silhouette is recognizable: outer circle + hole + bite using even-odd fill
+---
+
+## 2026-02-18 - US-003: Clear Notifications on Quit
+- What was implemented:
+  - Added `clearAllNotifications()` method to `NotificationManager` that removes both pending and delivered notifications
+  - Wired it into the Quit button action in `ExerciseSnackApp.swift` so notifications are cleared before `NSApplication.terminate`
+  - Added `NSApplication.willTerminateNotification` observer in `NotificationManager.init()` as a safety net for any termination path
+  - Two-layer approach: explicit call in Quit button + observer on willTerminate ensures reliable cleanup
+  - Build verified successfully with `xcodebuild`
+- Files changed:
+  - `ExerciseSnack/NotificationManager.swift` (added `clearAllNotifications()` method and willTerminate observer)
+  - `ExerciseSnack/ExerciseSnackApp.swift` (call clearAllNotifications before terminate in Quit button)
+- **Learnings for future iterations:**
+  - `UNUserNotificationCenter.removeAllPendingNotificationRequests()` clears scheduled-but-not-yet-fired notifications
+  - `UNUserNotificationCenter.removeAllDeliveredNotifications()` clears notifications already shown in Notification Center
+  - Both calls are synchronous (fire-and-forget) — safe to call right before `NSApplication.terminate`
+  - In SwiftUI apps without AppDelegate, observe `NSApplication.willTerminateNotification` via `NotificationCenter.default` for cleanup
+  - The `.keyboardShortcut("q")` on a MenuBarExtra button handles Cmd+Q, so the button action covers that path too
 ---
