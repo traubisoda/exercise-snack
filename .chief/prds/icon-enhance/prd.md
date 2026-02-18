@@ -1,0 +1,24 @@
+# App Icon Donut Shape Enhancement
+
+## Overview
+Refine the programmatically generated app icon (`generate_icon.swift`) so the donut reads as a 3/4 circle with a realistic bite taken out of the upper-right, and the purple glazing sits as a narrower band that leaves the tan donut body visible on both inner and outer edges.
+
+## User Stories
+
+### US-001: Reshape Donut and Narrow Glazing
+**Priority:** 1
+**Description:** As a user, I want the app icon's donut to be a 3/4 circle with a realistic bite mark in the upper-right and a narrower glazing band, so the icon looks like an actual bitten donut with visible dough under the glaze.
+
+**Acceptance Criteria:**
+- [ ] The donut body covers approximately 270° of the full circle (3/4), with the missing quarter in the upper-right area
+- [ ] The edges where the bite is taken are not clean straight cuts — they follow an irregular, tooth-mark-like scalloped or wavy contour to suggest a real bite
+- [ ] The bite mark position remains in the upper-right, consistent with the current design intent
+- [ ] The green gradient background is fully visible through the bitten-out area
+- [ ] The purple glazing follows the same 3/4 arc shape as the donut body
+- [ ] The glazing is visibly narrower than the donut ring, leaving a tan margin on both the inner and outer sides
+- [ ] The glazing's purple gradient and any 3D highlight effects are preserved
+- [ ] The bite-mark end of the glazing aligns with the bite-mark end of the donut body (no glazing floating past the bite)
+- [ ] Sprinkles (on sizes ≥64px) sit on the narrower glazing band and don't overflow onto the tan edges
+- [ ] The donut hole and background remain unchanged
+- [ ] Icon renders correctly at all 10 generated sizes (16×16 through 512×512 @2x)
+- [ ] Menu bar icon is not modified
