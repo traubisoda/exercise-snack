@@ -58,7 +58,8 @@
         "No duplicate notifications are created (existing future notifications are handled cleanly)"
       ],
       "priority": 4,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     }
   ]
 }

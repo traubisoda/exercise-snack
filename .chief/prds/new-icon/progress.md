@@ -9,6 +9,8 @@
 - MenuBarExtra uses `image:` parameter (not `systemImage:`) for custom asset catalog images
 - Notifications: use `UNUserNotificationCenter.removeAllPendingNotificationRequests()` + `removeAllDeliveredNotifications()` for full cleanup
 - App lifecycle: observe `NSApplication.willTerminateNotification` in NotificationManager for cleanup on quit (no AppDelegate needed)
+- Wake from sleep: use `NSWorkspace.shared.notificationCenter` (not `NotificationCenter.default`) to observe `NSWorkspace.didWakeNotification`
+- `rescheduleNotifications()` already handles the "clear all + reschedule only future" pattern — reuse it for wake-from-sleep
 
 ---
 
@@ -69,4 +71,20 @@
   - Both calls are synchronous (fire-and-forget) — safe to call right before `NSApplication.terminate`
   - In SwiftUI apps without AppDelegate, observe `NSApplication.willTerminateNotification` via `NotificationCenter.default` for cleanup
   - The `.keyboardShortcut("q")` on a MenuBarExtra button handles Cmd+Q, so the button action covers that path too
+---
+
+## 2026-02-18 - US-004: Handle Wake from Sleep / Stale Notifications
+- What was implemented:
+  - Added `NSWorkspace.didWakeNotification` observer in `NotificationManager.init()` to detect wake from sleep
+  - Created `handleWakeFromSleep()` method that clears delivered (stale) notifications and calls `rescheduleNotifications()`
+  - `rescheduleNotifications()` already removes all pending notifications and reschedules only for future working hours, so no duplicate handling needed
+  - Status text auto-updates via the existing `rescheduleNotifications()` → `updateStatusText()` chain
+  - Build verified successfully with `xcodebuild`
+- Files changed:
+  - `ExerciseSnack/NotificationManager.swift` (added didWakeNotification observer and handleWakeFromSleep method)
+- **Learnings for future iterations:**
+  - `NSWorkspace.didWakeNotification` is observed via `NSWorkspace.shared.notificationCenter` — NOT `NotificationCenter.default`
+  - The existing `rescheduleNotifications()` method already handles the pattern of "clear everything + schedule only future" — reuse it rather than writing custom stale-detection logic
+  - `removeAllDeliveredNotifications()` clears stale notifications shown in Notification Center before sleep
+  - No need for `willSleepNotification` — handling wake is sufficient since that's when we need to reconcile state
 ---

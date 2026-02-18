@@ -9,6 +9,26 @@ BUILD_DIR="$PROJECT_DIR/build/release"
 DMG_DIR="$BUILD_DIR/dmg-staging"
 DMG_OUTPUT="$BUILD_DIR/$APP_NAME.dmg"
 
+# Require version as argument
+if [ -z "${1:-}" ]; then
+  echo "Usage: ./release.sh <version>"
+  echo "Example: ./release.sh v1.2.0"
+  exit 1
+fi
+VERSION="$1"
+
+# Ensure gh CLI is available
+if ! command -v gh &>/dev/null; then
+  echo "Error: GitHub CLI (gh) is required. Install with: brew install gh"
+  exit 1
+fi
+
+# Check the tag doesn't already exist
+if git rev-parse "$VERSION" &>/dev/null; then
+  echo "Error: Tag $VERSION already exists"
+  exit 1
+fi
+
 echo "==> Cleaning previous build..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
@@ -53,5 +73,39 @@ rm -rf "$DMG_DIR"
 
 DMG_SIZE=$(du -h "$DMG_OUTPUT" | cut -f1 | xargs)
 echo ""
-echo "==> Done! DMG created at:"
-echo "    $DMG_OUTPUT ($DMG_SIZE)"
+echo "==> DMG created: $DMG_OUTPUT ($DMG_SIZE)"
+
+# Prompt for release notes (auto-generate if left empty)
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+echo ""
+echo "==> Enter release notes (leave empty to auto-generate from commits):"
+echo "    Press Ctrl-D when done, or just press Enter then Ctrl-D for auto-generate."
+NOTES=$(cat 2>/dev/null || true)
+
+if [ -z "$NOTES" ]; then
+  echo "==> Auto-generating release notes from commits..."
+  if [ -n "$LAST_TAG" ]; then
+    NOTES=$(git log "$LAST_TAG"..HEAD --pretty=format:"- %s" --no-merges)
+  else
+    NOTES=$(git log --pretty=format:"- %s" --no-merges -20)
+  fi
+  if [ -z "$NOTES" ]; then
+    NOTES="Release $VERSION"
+  fi
+  echo "$NOTES"
+fi
+
+# Create tag and GitHub release
+echo ""
+echo "==> Creating tag $VERSION..."
+git tag "$VERSION"
+git push origin "$VERSION"
+
+echo "==> Creating GitHub release..."
+gh release create "$VERSION" "$DMG_OUTPUT" \
+  --title "$APP_NAME $VERSION" \
+  --notes "$NOTES"
+
+echo ""
+echo "==> Release $VERSION published!"
+echo "    $(gh release view "$VERSION" --json url -q .url)"

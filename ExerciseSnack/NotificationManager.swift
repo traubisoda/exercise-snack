@@ -52,6 +52,15 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             self?.clearAllNotifications()
         }
 
+        // Handle wake from sleep: clear stale notifications and reschedule
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleWakeFromSleep()
+        }
+
         // Observe settings changes to reschedule notifications
         let settings = SettingsManager.shared
         settings.$workStartHour
@@ -308,6 +317,16 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     func dismissAlertStylePrompt() {
         UserDefaults.standard.set(true, forKey: "alertStylePromptDismissed")
         showAlertStylePrompt = false
+    }
+
+    // MARK: - Wake from Sleep
+
+    /// Clear stale notifications and reschedule for remaining working hours after wake.
+    private func handleWakeFromSleep() {
+        // Clear any delivered notifications that are now stale
+        center.removeAllDeliveredNotifications()
+        // Reschedule clears all pending and creates fresh ones for remaining hours
+        rescheduleNotifications()
     }
 
     // MARK: - Cleanup
