@@ -1,0 +1,21 @@
+{
+  "project": "Icon Fixes - Notification \u0026 System Settings App Icon",
+  "description": "The Exercise Snack app icon appears as the default macOS placeholder in notifications and System Settings \u003e Notifications, despite having a full AppIcon asset catalog. This PRD addresses ensuring the app icon displays correctly everywhere macOS uses it.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Ensure App Icon Displays in Notifications and System Settings",
+      "description": "As a user, I want to see the Exercise Snack app icon in notifications and System Settings so that I can easily identify the app.",
+      "acceptanceCriteria": [
+        "App icon appears correctly in macOS notification banners/alerts (not the default placeholder)",
+        "App icon appears correctly in System Settings \u003e Notifications list",
+        "App icon appears correctly in Notification Center history",
+        "Icon displays at proper resolution on both Retina and non-Retina displays",
+        "Verified by building, running, and triggering a test notification"
+      ],
+      "priority": 1,
+      "passes": true,
+      "inProgress": false
+    }
+  ]
+}
