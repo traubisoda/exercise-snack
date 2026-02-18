@@ -31,7 +31,8 @@
         "Sprinkles remain on top of the glazing and are still visible"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     },
     {
       "id": "US-003",

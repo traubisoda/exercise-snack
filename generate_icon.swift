@@ -47,8 +47,6 @@ func generateIcon(pixelSize: Int) -> NSImage {
     let centerY = size * 0.46
     let outerRadius = size * 0.32
     let innerRadius = size * 0.12
-    let glazeThickness = size * 0.06 // How thick the purple glaze appears on top
-
     // Bite parameters - upper right area
     let biteAngle = CGFloat.pi * 0.3 // Center angle of bite (upper-right)
     let biteRadius = size * 0.18
@@ -155,7 +153,7 @@ func generateIcon(pixelSize: Int) -> NSImage {
     ctx.fillPath(using: .evenOdd)
     ctx.restoreGState()
 
-    // === Draw purple glazing on top half of donut ===
+    // === Draw purple glazing covering full donut ring ===
     ctx.saveGState()
     ctx.addPath(bgPath)
     ctx.clip()
@@ -168,21 +166,16 @@ func generateIcon(pixelSize: Int) -> NSImage {
     ctx.addPath(glazeBiteClip)
     ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
 
-    // Glaze covers the top portion of the donut
-    // Create glaze path: a slightly smaller ellipse on the top half
-    let glazeOuterRadius = outerRadius - size * 0.008
-    let glazeInnerRadius = innerRadius + size * 0.008
-
-    // Glaze as the top part of the donut - use a clipping rect for top portion
-    let glazeClipRect = CGRect(x: 0, y: centerY - glazeThickness * 0.3, width: size, height: size)
+    // Glazing covers the full 360-degree ring, inset from edges to show raw dough
+    let glazeOuterRadius = outerRadius - size * 0.018 // Inset from outer edge to show tan dough rim
+    let glazeInnerRadius = innerRadius + size * 0.018 // Inset from inner edge to show tan dough rim
 
     let glazePath = CGMutablePath()
-    glazePath.addEllipse(in: CGRect(x: centerX - glazeOuterRadius, y: centerY - glazeOuterRadius + glazeThickness * 0.5,
+    glazePath.addEllipse(in: CGRect(x: centerX - glazeOuterRadius, y: centerY - glazeOuterRadius,
                                      width: glazeOuterRadius * 2, height: glazeOuterRadius * 2))
-    glazePath.addEllipse(in: CGRect(x: centerX - glazeInnerRadius, y: centerY - glazeInnerRadius + glazeThickness * 0.3,
+    glazePath.addEllipse(in: CGRect(x: centerX - glazeInnerRadius, y: centerY - glazeInnerRadius,
                                      width: glazeInnerRadius * 2, height: glazeInnerRadius * 2))
 
-    ctx.clip(to: glazeClipRect)
     ctx.addPath(glazePath)
 
     // Purple/violet gradient for glazing

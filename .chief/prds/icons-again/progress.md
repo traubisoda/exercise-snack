@@ -23,3 +23,21 @@
   - The fix is to use clipping instead: create a clip path of (full rect + bite circle) with even-odd to exclude the bite area, then draw the remaining shapes normally
   - This clipping approach is more robust because it works regardless of whether the subtracted shape extends beyond the parent shape's bounds
 ---
+
+## 2026-02-18 - US-002: Full-Coverage Purple Glazing on App Icon
+- What was implemented:
+  - Changed the purple glazing from top-half-only to full 360-degree ring coverage
+  - Removed the `glazeClipRect` that restricted glazing to the top portion of the donut
+  - Removed the vertical offset on glazing ellipses (they were shifted up with `glazeThickness * 0.5` and `0.3` offsets)
+  - Centered the glazing ellipses on the donut center for uniform coverage
+  - Increased the inset margins from `0.008` to `0.018` (outer and inner) to show a visible rim of raw tan dough at both edges
+  - Removed the unused `glazeThickness` variable
+  - Regenerated all 10 app icon sizes
+- Files changed:
+  - `generate_icon.swift` (modified — full-ring glazing, removed top-half clipping, removed unused variable)
+  - `ExerciseSnack/Assets.xcassets/AppIcon.appiconset/icon_*.png` (regenerated — all 10 sizes)
+- **Learnings for future iterations:**
+  - The original glazing used a combination of vertical offsets on the ellipses and a clip rect to restrict to top-half; making it full-ring is simpler — just center the ellipses and remove the clip rect
+  - The inset margin (`0.018 * size`) creates a nice visible dough rim at both outer and inner edges
+  - Sprinkle positions didn't need changes — they were already distributed around the full ring and the existing bounds-checking code handles the rest
+---
