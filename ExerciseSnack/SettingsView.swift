@@ -50,9 +50,18 @@ struct SettingsView: View {
             Section("General") {
                 Toggle("Launch at login", isOn: $settings.launchAtLogin)
             }
+
+            Section {
+                HStack {
+                    Text("Version")
+                    Spacer()
+                    Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown")
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 320, height: 400)
+        .frame(width: 320, height: 430)
         .fixedSize()
         .toolbarBackground(.visible, for: .windowToolbar)
     }
