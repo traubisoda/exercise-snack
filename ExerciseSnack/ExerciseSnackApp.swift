@@ -8,6 +8,9 @@ struct ExerciseSnackApp: App {
 
     init() {
         NotificationManager.shared.requestPermissionAndSchedule()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            UpdateManager.shared.checkForUpdates(userInitiated: false)
+        }
     }
 
     var body: some Scene {
@@ -62,6 +65,10 @@ struct ExerciseSnackApp: App {
                 NSApplication.shared.activate(ignoringOtherApps: true)
             }
             .keyboardShortcut(",")
+
+            Button("Check for Updates...") {
+                UpdateManager.shared.checkForUpdates(userInitiated: true)
+            }
 
             Divider()
 

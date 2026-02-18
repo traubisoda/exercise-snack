@@ -1,6 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <version>"
+  echo "  e.g. $0 v0.3.0"
+  exit 1
+fi
+
+VERSION_TAG="$1"
+VERSION="${VERSION_TAG#v}"  # Strip leading "v" if present
+
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT="ExerciseSnack.xcodeproj"
 SCHEME="ExerciseSnack"
@@ -9,11 +18,14 @@ BUILD_DIR="$PROJECT_DIR/build/release"
 DMG_DIR="$BUILD_DIR/dmg-staging"
 DMG_OUTPUT="$BUILD_DIR/$APP_NAME.dmg"
 
+echo "==> Setting MARKETING_VERSION to $VERSION..."
+sed -i '' "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = $VERSION/" "$PROJECT_DIR/$PROJECT/project.pbxproj"
+
 echo "==> Cleaning previous build..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-echo "==> Building $APP_NAME (Release)..."
+echo "==> Building $APP_NAME (Release) v$VERSION..."
 xcodebuild -project "$PROJECT_DIR/$PROJECT" \
   -scheme "$SCHEME" \
   -configuration Release \
@@ -52,4 +64,4 @@ rm -rf "$DMG_DIR"
 DMG_SIZE=$(du -h "$DMG_OUTPUT" | cut -f1 | xargs)
 echo ""
 echo "==> DMG created: $DMG_OUTPUT ($DMG_SIZE)"
-echo "    Run ./gh-release.sh <version> to publish a GitHub release."
+echo "    Run ./gh-release.sh $VERSION_TAG to publish a GitHub release."

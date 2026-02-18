@@ -14,6 +14,7 @@
 		A1000005 /* ExerciseSuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* ExerciseSuggestions.swift */; };
 		A1000006 /* chime.aiff in Resources */ = {isa = PBXBuildFile; fileRef = A2000009 /* chime.aiff */; };
 		A1000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200000A /* Assets.xcassets */; };
+		A1000008 /* UpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B /* UpdateManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		A2000008 /* ExerciseSuggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSuggestions.swift; sourceTree = "<group>"; };
 		A2000009 /* chime.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = chime.aiff; sourceTree = "<group>"; };
 		A200000A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A200000B /* UpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 				A2000006 /* SettingsView.swift */,
 				A2000007 /* NotificationManager.swift */,
 				A2000008 /* ExerciseSuggestions.swift */,
+				A200000B /* UpdateManager.swift */,
 				A2000009 /* chime.aiff */,
 				A200000A /* Assets.xcassets */,
 				A2000002 /* Info.plist */,
@@ -142,6 +145,7 @@
 				A1000003 /* SettingsView.swift in Sources */,
 				A1000004 /* NotificationManager.swift in Sources */,
 				A1000005 /* ExerciseSuggestions.swift in Sources */,
+				A1000008 /* UpdateManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,7 +208,7 @@
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.exercisesnack.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -225,7 +229,7 @@
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.exercisesnack.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
