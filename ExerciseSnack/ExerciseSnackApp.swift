@@ -66,6 +66,7 @@ struct ExerciseSnackApp: App {
             Divider()
 
             Button("Quit") {
+                NotificationManager.shared.clearAllNotifications()
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")

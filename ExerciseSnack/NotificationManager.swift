@@ -43,6 +43,15 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         center.setNotificationCategories([category])
         center.delegate = self
 
+        // Clear notifications when the app terminates
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.clearAllNotifications()
+        }
+
         // Observe settings changes to reschedule notifications
         let settings = SettingsManager.shared
         settings.$workStartHour
@@ -299,6 +308,14 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
     func dismissAlertStylePrompt() {
         UserDefaults.standard.set(true, forKey: "alertStylePromptDismissed")
         showAlertStylePrompt = false
+    }
+
+    // MARK: - Cleanup
+
+    /// Remove all pending and delivered notifications. Call before app termination.
+    func clearAllNotifications() {
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
     }
 
     // MARK: - Test Notification
