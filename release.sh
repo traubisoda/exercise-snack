@@ -19,8 +19,6 @@ xcodebuild -project "$PROJECT_DIR/$PROJECT" \
   -configuration Release \
   -derivedDataPath "$BUILD_DIR/DerivedData" \
   CODE_SIGN_IDENTITY="-" \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=NO \
   ONLY_ACTIVE_ARCH=NO \
   build
 
