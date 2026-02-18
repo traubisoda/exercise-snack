@@ -101,14 +101,21 @@ func generateIcon(pixelSize: Int) -> NSImage {
     ctx.addPath(bgPath)
     ctx.clip()
 
-    // Create donut shape: outer minus hole minus bite using even-odd rule
+    // First clip OUT the bite area, then draw donut ring with even-odd for the hole only
+    // This prevents the even-odd bug where the bite ellipse extending beyond the outer circle gets filled
+    let biteClipPath = CGMutablePath()
+    biteClipPath.addRect(CGRect(x: 0, y: 0, width: size, height: size))
+    biteClipPath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
+                                        width: biteRadius * 2, height: biteRadius * 2))
+    ctx.addPath(biteClipPath)
+    ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
+
+    // Now draw the donut ring (outer minus hole) — bite is already clipped out
     let donutBodyPath = CGMutablePath()
     donutBodyPath.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
                                          width: outerRadius * 2, height: outerRadius * 2))
     donutBodyPath.addEllipse(in: CGRect(x: centerX - innerRadius, y: centerY - innerRadius,
                                          width: innerRadius * 2, height: innerRadius * 2))
-    donutBodyPath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                         width: biteRadius * 2, height: biteRadius * 2))
 
     ctx.addPath(donutBodyPath)
     ctx.setFillColor(CGColor(red: 0.82, green: 0.62, blue: 0.38, alpha: 1.0)) // Warm tan
@@ -122,15 +129,7 @@ func generateIcon(pixelSize: Int) -> NSImage {
 
     // The bite cross-section is the area where the bite circle intersects the donut
     // Draw a crescent/arc to show the inner "cake" of the donut
-    let biteInnerPath = CGMutablePath()
-    // Create a slightly smaller bite to show the cross-section ring
     let crossSectionWidth = size * 0.025
-    let innerBiteRadius = biteRadius - crossSectionWidth
-
-    // Clip to bite area intersected with donut
-    let crossSectionClip = CGMutablePath()
-    crossSectionClip.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                            width: biteRadius * 2, height: biteRadius * 2))
 
     // Draw a ring at the bite edge within the donut body
     let biteEdgePath = CGMutablePath()
@@ -161,6 +160,14 @@ func generateIcon(pixelSize: Int) -> NSImage {
     ctx.addPath(bgPath)
     ctx.clip()
 
+    // Clip out the bite area first to prevent even-odd fill bug
+    let glazeBiteClip = CGMutablePath()
+    glazeBiteClip.addRect(CGRect(x: 0, y: 0, width: size, height: size))
+    glazeBiteClip.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
+                                         width: biteRadius * 2, height: biteRadius * 2))
+    ctx.addPath(glazeBiteClip)
+    ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
+
     // Glaze covers the top portion of the donut
     // Create glaze path: a slightly smaller ellipse on the top half
     let glazeOuterRadius = outerRadius - size * 0.008
@@ -174,9 +181,6 @@ func generateIcon(pixelSize: Int) -> NSImage {
                                      width: glazeOuterRadius * 2, height: glazeOuterRadius * 2))
     glazePath.addEllipse(in: CGRect(x: centerX - glazeInnerRadius, y: centerY - glazeInnerRadius + glazeThickness * 0.3,
                                      width: glazeInnerRadius * 2, height: glazeInnerRadius * 2))
-    // Also cut out the bite
-    glazePath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                     width: biteRadius * 2, height: biteRadius * 2))
 
     ctx.clip(to: glazeClipRect)
     ctx.addPath(glazePath)

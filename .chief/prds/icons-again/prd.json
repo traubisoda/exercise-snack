@@ -1,0 +1,51 @@
+{
+  "project": "Refine App and Menu Bar Donut Icons",
+  "description": "Fix the donut icons (app icon and menu bar icon) so the bite mark is a clean subtraction from the top-right of the donut instead of a protruding bulge. Additionally, change the purple glazing on the app icon to cover the full donut (360 degrees) with raw dough visible at the edges, properly aligned with the bite mark.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Fix Bite Mark on App Icon",
+      "description": "As a user, I want the app icon's donut to have a clean bite taken out of the top-right so that it looks like a real bitten donut, not a donut with a weird bulge.",
+      "acceptanceCriteria": [
+        "The bite mark is a clean circular subtraction from the top-right of the donut",
+        "No part of the bite circle protrudes beyond the donut's outer edge (fix the even-odd fill bug where the bite ellipse extends outside the outer circle and gets filled)",
+        "The bite cleanly removes a piece from both the donut body and the glazing",
+        "The donut hole remains clean and unaffected by the bite fix",
+        "All app icon sizes (16x16 through 512x512@2x) render correctly",
+        "The green gradient background remains unchanged"
+      ],
+      "priority": 1,
+      "passes": true,
+      "inProgress": false
+    },
+    {
+      "id": "US-002",
+      "title": "Full-Coverage Purple Glazing on App Icon",
+      "description": "As a user, I want the purple glazing to cover the entire donut (360 degrees around the ring) instead of just the top half, with the raw tan dough showing at the outer and inner edges, so that it looks like a properly glazed donut viewed from above.",
+      "acceptanceCriteria": [
+        "Purple glazing covers the full donut ring (all 360 degrees), not just the top half",
+        "A visible margin of raw tan dough is exposed at the outer edge of the donut (between the glazing and the outer rim)",
+        "A visible margin of raw tan dough is exposed at the inner edge of the donut hole (between the glazing and the hole)",
+        "The glazing is cleanly cut at the bite mark, aligned with the bite shape (no glazing protrudes into the bite area)",
+        "The purple gradient on the glazing still looks good covering the full ring",
+        "Sprinkles remain on top of the glazing and are still visible"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "US-003",
+      "title": "Fix Bite Mark on Menu Bar Icon",
+      "description": "As a user, I want the menu bar icon's donut to have the same clean bite mark from the top-right so that it matches the app icon's design language.",
+      "acceptanceCriteria": [
+        "The bite mark is a clean circular subtraction from the top-right, with no bulge",
+        "The same clipping fix applied to the app icon is applied to the menu bar icon",
+        "The icon remains a proper template image (black with alpha, for macOS light/dark mode adaptation)",
+        "Both 1x (18px) and 2x (36px) menu bar icon sizes render correctly",
+        "The donut hole and glazing line detail remain intact"
+      ],
+      "priority": 3,
+      "passes": false
+    }
+  ]
+}
