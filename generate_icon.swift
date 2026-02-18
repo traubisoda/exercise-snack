@@ -2,8 +2,11 @@
 
 import AppKit
 import CoreGraphics
+import Foundation
 
 // Generate a bitten-donut icon at a given pixel size
+// The donut is a 3/4 circle (~270°) with the missing quarter in the upper-right,
+// featuring realistic scalloped bite edges and a narrower glazing band.
 func generateIcon(pixelSize: Int) -> NSImage {
     let size = CGFloat(pixelSize)
     let image = NSImage(size: NSSize(width: size, height: size))
@@ -47,32 +50,119 @@ func generateIcon(pixelSize: Int) -> NSImage {
     let centerY = size * 0.46
     let outerRadius = size * 0.32
     let innerRadius = size * 0.12
-    // Bite parameters - upper right area
-    let biteAngle = CGFloat.pi * 0.3 // Center angle of bite (upper-right)
-    let biteRadius = size * 0.18
-    let biteCenterX = centerX + outerRadius * 0.78 * cos(biteAngle)
-    let biteCenterY = centerY + outerRadius * 0.78 * sin(biteAngle)
 
-    // === Helper: Create donut path with bite ===
-    func donutOuterPath() -> CGMutablePath {
-        let path = CGMutablePath()
-        // Outer circle
-        path.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
-                                    width: outerRadius * 2, height: outerRadius * 2))
-        return path
-    }
+    // === Bite geometry ===
+    // The bite removes the upper-right quarter (~90° arc) of the donut.
+    // We define the arc gap and create scalloped edges at the bite boundaries.
+    // Angles in CG are measured counter-clockwise from the positive X axis.
+    // In CG's coordinate system (y-up), upper-right is roughly 15°..105° range.
+    let biteStartAngle = CGFloat.pi * 0.08   // ~14° - where the bite starts (right side)
+    let biteEndAngle = CGFloat.pi * 0.58     // ~104° - where the bite ends (top side)
 
-    func holePath() -> CGMutablePath {
+    // === Helper: Create 3/4 donut arc path ===
+    // Returns a closed path for an arc-shaped ring (outer arc - inner arc) with scalloped bite edges
+    func donutArcPath(outerR: CGFloat, innerR: CGFloat, addScallops: Bool) -> CGMutablePath {
         let path = CGMutablePath()
-        path.addEllipse(in: CGRect(x: centerX - innerRadius, y: centerY - innerRadius,
-                                    width: innerRadius * 2, height: innerRadius * 2))
-        return path
-    }
 
-    func bitePath() -> CGMutablePath {
-        let path = CGMutablePath()
-        path.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                    width: biteRadius * 2, height: biteRadius * 2))
+        // The donut arc covers ~270° — everything EXCEPT the bite gap in the upper-right.
+        // The bite gap spans from biteStartAngle to biteEndAngle (the short arc in upper-right).
+        // We want the outer arc to go the LONG way from biteEndAngle around to biteStartAngle.
+        //
+        // In CoreGraphics (y-up, non-flipped CTM), addArc clockwise:false goes
+        // counter-clockwise in math convention (increasing angles).
+        // From biteEndAngle (~104°) going counter-clockwise INCREASES the angle,
+        // wrapping through 180°, 270°, 360°/0°, back to biteStartAngle (~14°).
+        // That's the long 270° arc we want.
+        path.addArc(center: CGPoint(x: centerX, y: centerY),
+                    radius: outerR,
+                    startAngle: biteEndAngle,
+                    endAngle: biteStartAngle,
+                    clockwise: false) // Counter-clockwise = long way around
+
+        if addScallops {
+            // Scalloped edge at the bite start (right side of bite)
+            // Go from outer radius inward to inner radius along biteStartAngle
+            let numScallops = max(3, Int(outerR / (20.0 * scale)))
+            let scDepth = 4.0 * scale
+
+            // Scallop from outer to inner at biteStartAngle
+            let outerPtStart = CGPoint(x: centerX + outerR * cos(biteStartAngle),
+                                        y: centerY + outerR * sin(biteStartAngle))
+            let innerPtStart = CGPoint(x: centerX + innerR * cos(biteStartAngle),
+                                        y: centerY + innerR * sin(biteStartAngle))
+
+            // Generate scallop points from outer to inner
+            let perpXStart = -sin(biteStartAngle)
+            let perpYStart = cos(biteStartAngle)
+
+            for i in 0..<numScallops {
+                let t_mid = (CGFloat(i) + 0.5) / CGFloat(numScallops)
+                let t_end = CGFloat(i + 1) / CGFloat(numScallops)
+
+                let midX = outerPtStart.x + (innerPtStart.x - outerPtStart.x) * t_mid
+                let midY = outerPtStart.y + (innerPtStart.y - outerPtStart.y) * t_mid
+                let endX = outerPtStart.x + (innerPtStart.x - outerPtStart.x) * t_end
+                let endY = outerPtStart.y + (innerPtStart.y - outerPtStart.y) * t_end
+
+                let side: CGFloat = (i % 2 == 0) ? 1.0 : -1.0
+                let cpX = midX + perpXStart * scDepth * side
+                let cpY = midY + perpYStart * scDepth * side
+
+                path.addQuadCurve(to: CGPoint(x: endX, y: endY),
+                                  control: CGPoint(x: cpX, y: cpY))
+            }
+        } else {
+            // Straight line from outer to inner at biteStartAngle
+            path.addLine(to: CGPoint(x: centerX + innerR * cos(biteStartAngle),
+                                     y: centerY + innerR * sin(biteStartAngle)))
+        }
+
+        // Inner arc: from biteStartAngle going the LONG way back to biteEndAngle
+        // This traces the inner edge of the donut in the OPPOSITE direction (clockwise in math)
+        // to close the ring shape properly.
+        path.addArc(center: CGPoint(x: centerX, y: centerY),
+                    radius: innerR,
+                    startAngle: biteStartAngle,
+                    endAngle: biteEndAngle,
+                    clockwise: true) // Clockwise = long way back (opposite direction of outer arc)
+
+        if addScallops {
+            // Scalloped edge at the bite end (top side of bite)
+            // Go from inner radius outward to outer radius along biteEndAngle
+            let numScallops = max(3, Int(outerR / (20.0 * scale)))
+            let scDepth = 4.0 * scale
+
+            let innerPtEnd = CGPoint(x: centerX + innerR * cos(biteEndAngle),
+                                      y: centerY + innerR * sin(biteEndAngle))
+            let outerPtEnd = CGPoint(x: centerX + outerR * cos(biteEndAngle),
+                                      y: centerY + outerR * sin(biteEndAngle))
+
+            let perpXEnd = -sin(biteEndAngle)
+            let perpYEnd = cos(biteEndAngle)
+
+            for i in 0..<numScallops {
+                let t_mid = (CGFloat(i) + 0.5) / CGFloat(numScallops)
+                let t_end = CGFloat(i + 1) / CGFloat(numScallops)
+
+                let midX = innerPtEnd.x + (outerPtEnd.x - innerPtEnd.x) * t_mid
+                let midY = innerPtEnd.y + (outerPtEnd.y - innerPtEnd.y) * t_mid
+                let endX = innerPtEnd.x + (outerPtEnd.x - innerPtEnd.x) * t_end
+                let endY = innerPtEnd.y + (outerPtEnd.y - innerPtEnd.y) * t_end
+
+                let side: CGFloat = (i % 2 == 0) ? -1.0 : 1.0
+                let cpX = midX + perpXEnd * scDepth * side
+                let cpY = midY + perpYEnd * scDepth * side
+
+                path.addQuadCurve(to: CGPoint(x: endX, y: endY),
+                                  control: CGPoint(x: cpX, y: cpY))
+            }
+        } else {
+            // Straight line from inner to outer at biteEndAngle
+            path.addLine(to: CGPoint(x: centerX + outerR * cos(biteEndAngle),
+                                     y: centerY + outerR * sin(biteEndAngle)))
+        }
+
+        path.closeSubpath()
         return path
     }
 
@@ -84,97 +174,73 @@ func generateIcon(pixelSize: Int) -> NSImage {
                   blur: 12 * scale,
                   color: CGColor(red: 0, green: 0, blue: 0, alpha: 0.35))
 
-    // Draw donut body shape for shadow (without hole/bite cut)
-    let shadowPath = CGMutablePath()
-    shadowPath.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
-                                      width: outerRadius * 2, height: outerRadius * 2))
+    // Draw the 3/4 arc donut shape for shadow (no scallops needed, just the silhouette)
+    let shadowPath = donutArcPath(outerR: outerRadius, innerR: innerRadius, addScallops: false)
     ctx.addPath(shadowPath)
     ctx.setFillColor(CGColor(red: 0.7, green: 0.5, blue: 0.3, alpha: 1.0))
     ctx.fillPath()
     ctx.restoreGState()
 
-    // === Draw donut body (warm tan) ===
+    // === Draw donut body (warm tan) with scalloped bite edges ===
     ctx.saveGState()
-    // Clip to background shape
     ctx.addPath(bgPath)
     ctx.clip()
 
-    // First clip OUT the bite area, then draw donut ring with even-odd for the hole only
-    // This prevents the even-odd bug where the bite ellipse extending beyond the outer circle gets filled
-    let biteClipPath = CGMutablePath()
-    biteClipPath.addRect(CGRect(x: 0, y: 0, width: size, height: size))
-    biteClipPath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                        width: biteRadius * 2, height: biteRadius * 2))
-    ctx.addPath(biteClipPath)
-    ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
-
-    // Now draw the donut ring (outer minus hole) — bite is already clipped out
-    let donutBodyPath = CGMutablePath()
-    donutBodyPath.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
-                                         width: outerRadius * 2, height: outerRadius * 2))
-    donutBodyPath.addEllipse(in: CGRect(x: centerX - innerRadius, y: centerY - innerRadius,
-                                         width: innerRadius * 2, height: innerRadius * 2))
-
+    let donutBodyPath = donutArcPath(outerR: outerRadius, innerR: innerRadius, addScallops: true)
     ctx.addPath(donutBodyPath)
     ctx.setFillColor(CGColor(red: 0.82, green: 0.62, blue: 0.38, alpha: 1.0)) // Warm tan
-    ctx.fillPath(using: .evenOdd)
+    ctx.fillPath()
     ctx.restoreGState()
 
-    // === Draw bite cross-section (slightly darker tan for depth) ===
+    // === Draw bite cross-section (slightly darker tan for depth) at bite edges ===
     ctx.saveGState()
     ctx.addPath(bgPath)
     ctx.clip()
 
-    // The bite cross-section is the area where the bite circle intersects the donut
-    // Draw a crescent/arc to show the inner "cake" of the donut
-    let crossSectionWidth = size * 0.025
+    let crossSectionWidth = size * 0.02
 
-    // Draw a ring at the bite edge within the donut body
-    let biteEdgePath = CGMutablePath()
-    biteEdgePath.addEllipse(in: CGRect(x: biteCenterX - biteRadius - crossSectionWidth,
-                                        y: biteCenterY - biteRadius - crossSectionWidth,
-                                        width: (biteRadius + crossSectionWidth) * 2,
-                                        height: (biteRadius + crossSectionWidth) * 2))
-    biteEdgePath.addEllipse(in: CGRect(x: biteCenterX - biteRadius,
-                                        y: biteCenterY - biteRadius,
-                                        width: biteRadius * 2,
-                                        height: biteRadius * 2))
+    // Draw a thin darker strip along each bite edge to show the "cake interior"
+    // We do this by drawing a slightly larger donut arc and clipping to a narrow strip near the bite edges
+    for edgeAngle in [biteStartAngle, biteEndAngle] {
+        ctx.saveGState()
 
-    // Clip to donut outer minus inner
-    let donutMask = CGMutablePath()
-    donutMask.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
-                                     width: outerRadius * 2, height: outerRadius * 2))
-    ctx.addPath(donutMask)
-    ctx.clip()
+        // Create a narrow wedge clip around this bite edge
+        let wedgeHalfAngle = CGFloat.pi * 0.025
+        let clipPath = CGMutablePath()
+        clipPath.move(to: CGPoint(x: centerX, y: centerY))
+        clipPath.addArc(center: CGPoint(x: centerX, y: centerY),
+                        radius: outerRadius * 1.5,
+                        startAngle: edgeAngle - wedgeHalfAngle,
+                        endAngle: edgeAngle + wedgeHalfAngle,
+                        clockwise: false)
+        clipPath.closeSubpath()
+        ctx.addPath(clipPath)
+        ctx.clip()
 
-    // Exclude the donut hole
-    ctx.addPath(biteEdgePath)
-    ctx.setFillColor(CGColor(red: 0.72, green: 0.52, blue: 0.30, alpha: 1.0)) // Slightly darker tan
-    ctx.fillPath(using: .evenOdd)
+        // Draw a slightly expanded donut body in darker tan
+        let expandedPath = donutArcPath(outerR: outerRadius + crossSectionWidth, innerR: max(innerRadius - crossSectionWidth, 0), addScallops: true)
+        ctx.addPath(expandedPath)
+        ctx.setFillColor(CGColor(red: 0.72, green: 0.52, blue: 0.30, alpha: 1.0)) // Slightly darker tan
+        ctx.fillPath()
+
+        ctx.restoreGState()
+    }
+
     ctx.restoreGState()
 
-    // === Draw purple glazing covering full donut ring ===
+    // === Draw purple glazing as a narrower band on the 3/4 arc ===
     ctx.saveGState()
     ctx.addPath(bgPath)
     ctx.clip()
 
-    // Clip out the bite area first to prevent even-odd fill bug
-    let glazeBiteClip = CGMutablePath()
-    glazeBiteClip.addRect(CGRect(x: 0, y: 0, width: size, height: size))
-    glazeBiteClip.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                         width: biteRadius * 2, height: biteRadius * 2))
-    ctx.addPath(glazeBiteClip)
-    ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
+    // Glazing is narrower than the donut body, leaving tan margins on both sides
+    let glazeInset = size * 0.035 // How much narrower the glaze is on each side
+    let glazeOuterRadius = outerRadius - glazeInset
+    let glazeInnerRadius = innerRadius + glazeInset
 
-    // Glazing covers the full 360-degree ring, inset from edges to show raw dough
-    let glazeOuterRadius = outerRadius - size * 0.018 // Inset from outer edge to show tan dough rim
-    let glazeInnerRadius = innerRadius + size * 0.018 // Inset from inner edge to show tan dough rim
-
-    let glazePath = CGMutablePath()
-    glazePath.addEllipse(in: CGRect(x: centerX - glazeOuterRadius, y: centerY - glazeOuterRadius,
-                                     width: glazeOuterRadius * 2, height: glazeOuterRadius * 2))
-    glazePath.addEllipse(in: CGRect(x: centerX - glazeInnerRadius, y: centerY - glazeInnerRadius,
-                                     width: glazeInnerRadius * 2, height: glazeInnerRadius * 2))
+    // The glazing follows the same 3/4 arc shape but with adjusted radii and NO scallops
+    // (glaze has a clean break at the bite)
+    let glazePath = donutArcPath(outerR: glazeOuterRadius, innerR: glazeInnerRadius, addScallops: false)
 
     ctx.addPath(glazePath)
 
@@ -184,7 +250,7 @@ func generateIcon(pixelSize: Int) -> NSImage {
         CGColor(red: 0.42, green: 0.18, blue: 0.58, alpha: 1.0)  // Darker purple
     ] as CFArray
 
-    ctx.clip(using: .evenOdd)
+    ctx.clip()
 
     if let glazeGradient = CGGradient(colorsSpace: colorSpace, colors: glazeGradientColors, locations: gradientLocations) {
         ctx.drawLinearGradient(glazeGradient,
@@ -194,7 +260,7 @@ func generateIcon(pixelSize: Int) -> NSImage {
     }
     ctx.restoreGState()
 
-    // === Draw sprinkles on the glazing ===
+    // === Draw sprinkles on the narrower glazing band ===
     if size >= 64 { // Only draw sprinkles at larger sizes where they're visible
         let sprinkleColors: [CGColor] = [
             CGColor(red: 1.0, green: 0.4, blue: 0.4, alpha: 1.0),  // Red
@@ -204,64 +270,76 @@ func generateIcon(pixelSize: Int) -> NSImage {
             CGColor(red: 1.0, green: 0.55, blue: 0.2, alpha: 1.0), // Orange
         ]
 
-        // Sprinkle positions (in 512-unit space, relative to center)
         struct Sprinkle {
-            let dx: CGFloat   // offset from center X (in 512 units)
-            let dy: CGFloat   // offset from center Y
-            let angle: CGFloat // rotation angle in radians
+            let angle: CGFloat   // angle on the donut (radians from positive X)
+            let radiusFrac: CGFloat // 0.0 = inner glaze edge, 1.0 = outer glaze edge
+            let rotation: CGFloat // visual rotation angle
             let colorIndex: Int
         }
 
+        // Place sprinkles at specific angles along the 3/4 arc, within the glazing band
+        // The safe arc range is from biteStartAngle going clockwise (through negative angles) to biteEndAngle
+        // i.e., from ~14° down through 0°, -90°, -180°, up to ~284° (=biteEndAngle going the long way)
         let sprinkles: [Sprinkle] = [
-            Sprinkle(dx: -0.18, dy: 0.14, angle: 0.3, colorIndex: 0),
-            Sprinkle(dx: -0.08, dy: 0.22, angle: -0.5, colorIndex: 1),
-            Sprinkle(dx: 0.05, dy: 0.20, angle: 0.8, colorIndex: 2),
-            Sprinkle(dx: -0.22, dy: 0.02, angle: -0.2, colorIndex: 3),
-            Sprinkle(dx: -0.14, dy: -0.18, angle: 0.6, colorIndex: 4),
-            Sprinkle(dx: 0.02, dy: -0.24, angle: -0.4, colorIndex: 0),
-            Sprinkle(dx: 0.16, dy: -0.16, angle: 0.1, colorIndex: 1),
-            Sprinkle(dx: -0.24, dy: -0.10, angle: -0.7, colorIndex: 2),
-            Sprinkle(dx: 0.14, dy: 0.12, angle: 0.5, colorIndex: 3),
-            Sprinkle(dx: -0.04, dy: 0.06, angle: -0.3, colorIndex: 4),
+            Sprinkle(angle: -0.3, radiusFrac: 0.35, rotation: 0.3, colorIndex: 0),
+            Sprinkle(angle: -0.8, radiusFrac: 0.65, rotation: -0.5, colorIndex: 1),
+            Sprinkle(angle: -1.3, radiusFrac: 0.4, rotation: 0.8, colorIndex: 2),
+            Sprinkle(angle: -1.8, radiusFrac: 0.7, rotation: -0.2, colorIndex: 3),
+            Sprinkle(angle: -2.3, radiusFrac: 0.3, rotation: 0.6, colorIndex: 4),
+            Sprinkle(angle: -2.8, radiusFrac: 0.55, rotation: -0.4, colorIndex: 0),
+            Sprinkle(angle: CGFloat.pi * 0.75, radiusFrac: 0.45, rotation: 0.1, colorIndex: 1),
+            Sprinkle(angle: CGFloat.pi * 0.9, radiusFrac: 0.6, rotation: -0.7, colorIndex: 2),
+            Sprinkle(angle: CGFloat.pi * 1.1, radiusFrac: 0.5, rotation: 0.5, colorIndex: 3),
+            Sprinkle(angle: CGFloat.pi * 1.3, radiusFrac: 0.35, rotation: -0.3, colorIndex: 4),
         ]
 
         let sprinkleLength = 14.0 * scale
         let sprinkleWidth = 3.5 * scale
 
         for s in sprinkles {
-            let sx = centerX + s.dx * size
-            let sy = centerY + s.dy * size
+            // Compute sprinkle position along the glazing band
+            let r = glazeInnerRadius + s.radiusFrac * (glazeOuterRadius - glazeInnerRadius)
+            let sx = centerX + r * cos(s.angle)
+            let sy = centerY + r * sin(s.angle)
 
-            // Check if sprinkle is within the donut body (between inner and outer radius)
-            // and not in the bite area
-            let distFromCenter = sqrt(pow(sx - centerX, 2) + pow(sy - centerY, 2))
-            let distFromBite = sqrt(pow(sx - biteCenterX, 2) + pow(sy - biteCenterY, 2))
+            // Verify the sprinkle angle is within the 3/4 arc (not in the bite gap)
+            // Normalize angle to [0, 2*pi)
+            var normalizedAngle = s.angle.truncatingRemainder(dividingBy: CGFloat.pi * 2)
+            if normalizedAngle < 0 { normalizedAngle += CGFloat.pi * 2 }
 
-            if distFromCenter > innerRadius + size * 0.04 &&
-               distFromCenter < outerRadius - size * 0.04 &&
-               distFromBite > biteRadius + size * 0.02 {
-
-                ctx.saveGState()
-                ctx.translateBy(x: sx, y: sy)
-                ctx.rotate(by: s.angle)
-
-                let sprinkleRect = CGRect(x: -sprinkleLength / 2, y: -sprinkleWidth / 2,
-                                          width: sprinkleLength, height: sprinkleWidth)
-                let sprinklePath = CGPath(roundedRect: sprinkleRect,
-                                          cornerWidth: sprinkleWidth / 2,
-                                          cornerHeight: sprinkleWidth / 2,
-                                          transform: nil)
-                ctx.addPath(sprinklePath)
-                ctx.setFillColor(sprinkleColors[s.colorIndex])
-                ctx.fillPath()
-                ctx.restoreGState()
+            // The bite gap is from biteStartAngle to biteEndAngle (the short arc in upper-right)
+            // Skip sprinkles that fall in this gap
+            let normStart = biteStartAngle
+            let normEnd = biteEndAngle
+            if normalizedAngle >= normStart && normalizedAngle <= normEnd {
+                continue
             }
+
+            ctx.saveGState()
+            ctx.translateBy(x: sx, y: sy)
+            ctx.rotate(by: s.rotation)
+
+            let sprinkleRect = CGRect(x: -sprinkleLength / 2, y: -sprinkleWidth / 2,
+                                      width: sprinkleLength, height: sprinkleWidth)
+            let sprinklePath = CGPath(roundedRect: sprinkleRect,
+                                      cornerWidth: sprinkleWidth / 2,
+                                      cornerHeight: sprinkleWidth / 2,
+                                      transform: nil)
+            ctx.addPath(sprinklePath)
+            ctx.setFillColor(sprinkleColors[s.colorIndex])
+            ctx.fillPath()
+            ctx.restoreGState()
         }
     }
 
     // === Subtle highlight on the donut for 3D effect ===
     ctx.saveGState()
     ctx.addPath(bgPath)
+    ctx.clip()
+
+    // Clip to the donut arc shape so highlight doesn't appear in the bite gap
+    let highlightDonutClip = donutArcPath(outerR: outerRadius, innerR: innerRadius, addScallops: false)
+    ctx.addPath(highlightDonutClip)
     ctx.clip()
 
     // Add a subtle light reflection on the upper-left of the donut
@@ -274,13 +352,6 @@ func generateIcon(pixelSize: Int) -> NSImage {
     ] as CFArray
 
     if let highlightGradient = CGGradient(colorsSpace: colorSpace, colors: highlightColors, locations: gradientLocations) {
-        // Clip to donut shape first
-        let donutClip = CGMutablePath()
-        donutClip.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
-                                         width: outerRadius * 2, height: outerRadius * 2))
-        ctx.addPath(donutClip)
-        ctx.clip()
-
         ctx.drawRadialGradient(highlightGradient,
                                 startCenter: highlightCenter, startRadius: 0,
                                 endCenter: highlightCenter, endRadius: highlightRadius,
