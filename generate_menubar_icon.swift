@@ -29,22 +29,29 @@ func generateMenuBarIcon(pixelSize: Int) -> NSImage {
     let biteCenterX = centerX + outerRadius * 0.78 * cos(biteAngle)
     let biteCenterY = centerY + outerRadius * 0.78 * sin(biteAngle)
 
-    // === Draw donut shape: outer minus hole minus bite (even-odd fill) ===
+    // === Draw donut shape: clip out bite first, then draw outer minus hole ===
+    ctx.saveGState()
+
+    // Clip OUT the bite area first (rect + bite ellipse with even-odd = everything except bite)
+    let biteClipPath = CGMutablePath()
+    biteClipPath.addRect(CGRect(x: 0, y: 0, width: size, height: size))
+    biteClipPath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
+                                        width: biteRadius * 2, height: biteRadius * 2))
+    ctx.addPath(biteClipPath)
+    ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
+
+    // Now draw the donut ring (outer minus hole) — bite is already clipped out
     let donutPath = CGMutablePath()
-    // Outer circle
     donutPath.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
                                      width: outerRadius * 2, height: outerRadius * 2))
-    // Inner hole
     donutPath.addEllipse(in: CGRect(x: centerX - innerRadius, y: centerY - innerRadius,
                                      width: innerRadius * 2, height: innerRadius * 2))
-    // Bite
-    donutPath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                     width: biteRadius * 2, height: biteRadius * 2))
 
     ctx.addPath(donutPath)
     // Black fill — template rendering mode will handle light/dark adaptation
     ctx.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1.0))
     ctx.fillPath(using: .evenOdd)
+    ctx.restoreGState()
 
     // === Draw glazing line on top half for recognizability ===
     // A thicker arc on the upper portion to suggest glazing
@@ -53,14 +60,20 @@ func generateMenuBarIcon(pixelSize: Int) -> NSImage {
 
     ctx.saveGState()
 
-    // Clip to the donut body (exclude hole and bite)
+    // Clip out the bite area first
+    let glazeBiteClip = CGMutablePath()
+    glazeBiteClip.addRect(CGRect(x: 0, y: 0, width: size, height: size))
+    glazeBiteClip.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
+                                         width: biteRadius * 2, height: biteRadius * 2))
+    ctx.addPath(glazeBiteClip)
+    ctx.clip(using: .evenOdd) // Clips to everything EXCEPT the bite circle
+
+    // Then clip to the donut body (exclude hole)
     let clipPath = CGMutablePath()
     clipPath.addEllipse(in: CGRect(x: centerX - outerRadius, y: centerY - outerRadius,
                                     width: outerRadius * 2, height: outerRadius * 2))
     clipPath.addEllipse(in: CGRect(x: centerX - innerRadius, y: centerY - innerRadius,
                                     width: innerRadius * 2, height: innerRadius * 2))
-    clipPath.addEllipse(in: CGRect(x: biteCenterX - biteRadius, y: biteCenterY - biteRadius,
-                                    width: biteRadius * 2, height: biteRadius * 2))
     ctx.addPath(clipPath)
     ctx.clip(using: .evenOdd)
 

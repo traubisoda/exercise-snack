@@ -46,7 +46,8 @@
         "The donut hole and glazing line detail remain intact"
       ],
       "priority": 3,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     }
   ]
 }

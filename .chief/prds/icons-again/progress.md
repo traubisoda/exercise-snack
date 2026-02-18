@@ -41,3 +41,20 @@
   - The inset margin (`0.018 * size`) creates a nice visible dough rim at both outer and inner edges
   - Sprinkle positions didn't need changes — they were already distributed around the full ring and the existing bounds-checking code handles the rest
 ---
+
+## 2026-02-18 - US-003: Fix Bite Mark on Menu Bar Icon
+- What was implemented:
+  - Applied the same clipping-based bite subtraction fix from the app icon (US-001) to the menu bar icon
+  - Donut body: replaced 3-ellipse even-odd fill (outer + hole + bite) with clip-first approach (rect + bite with even-odd clip, then outer + hole with even-odd fill)
+  - Glazing clip path: replaced 3-ellipse even-odd clip (outer + hole + bite) with two-step clipping (first clip out bite, then clip to donut body minus hole)
+  - Regenerated both menu bar icon sizes (18px @1x and 36px @2x)
+  - Verified both sizes render correctly with clean bite mark, no bulge
+- Files changed:
+  - `generate_menubar_icon.swift` (modified — fixed bite subtraction in donut body and glazing clip)
+  - `ExerciseSnack/Assets.xcassets/MenuBarIcon.imageset/menubar_icon.png` (regenerated)
+  - `ExerciseSnack/Assets.xcassets/MenuBarIcon.imageset/menubar_icon@2x.png` (regenerated)
+- **Learnings for future iterations:**
+  - The menu bar icon had the exact same even-odd fill bug as the app icon — when fixing a drawing pattern in one icon generator, always check if the other icon generator has the same pattern
+  - For the glazing clip, the menu bar icon needed a two-step clip (bite exclusion, then donut body clip) since clips are intersected — you can't combine bite exclusion and hole exclusion in a single 3-ellipse even-odd clip without the same bug
+  - The icon remains a proper template image (black with alpha) after the fix — the clipping approach doesn't affect the color/alpha properties
+---
