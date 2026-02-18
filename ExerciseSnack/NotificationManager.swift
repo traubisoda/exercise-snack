@@ -73,12 +73,32 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
             .store(in: &cancellables)
     }
 
-    func requestPermission() {
-        center.requestAuthorization(options: [.alert, .sound]) { granted, error in
-            if granted {
+    /// Check current notification authorization and schedule if already granted,
+    /// otherwise request permission (which prompts the user on first launch).
+    func requestPermissionAndSchedule() {
+        center.getNotificationSettings { [weak self] settings in
+            guard let self = self else { return }
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                // Already authorized — schedule immediately without waiting for requestAuthorization
                 DispatchQueue.main.async {
                     self.rescheduleNotifications()
                     self.checkAlertStyle()
+                }
+            case .notDetermined:
+                // First launch — prompt user, then schedule on grant
+                self.center.requestAuthorization(options: [.alert, .sound]) { granted, error in
+                    if granted {
+                        DispatchQueue.main.async {
+                            self.rescheduleNotifications()
+                            self.checkAlertStyle()
+                        }
+                    }
+                }
+            default:
+                // Denied or other — just update status
+                DispatchQueue.main.async {
+                    self.updateStatusText()
                 }
             }
         }

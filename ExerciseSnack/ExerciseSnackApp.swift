@@ -7,7 +7,7 @@ struct ExerciseSnackApp: App {
     @Environment(\.openWindow) private var openWindow
 
     init() {
-        NotificationManager.shared.requestPermission()
+        NotificationManager.shared.requestPermissionAndSchedule()
     }
 
     var body: some Scene {
