@@ -27,7 +27,8 @@
         "Quitting via other means (e.g., force quit, system shutdown) does not leave stale notifications because the app reschedules on next launch anyway (US-001)"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true,
+      "inProgress": false
     }
   ]
 }

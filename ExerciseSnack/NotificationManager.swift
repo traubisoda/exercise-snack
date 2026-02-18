@@ -43,15 +43,6 @@ class NotificationManager: NSObject, ObservableObject, UNUserNotificationCenterD
         center.setNotificationCategories([category])
         center.delegate = self
 
-        // Clear notifications when the app terminates
-        NotificationCenter.default.addObserver(
-            forName: NSApplication.willTerminateNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.clearAllNotifications()
-        }
-
         // Handle wake from sleep: clear stale notifications and reschedule
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification,

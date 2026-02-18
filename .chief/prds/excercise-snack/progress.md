@@ -170,3 +170,16 @@
   - `Text("...").disabled(true)` in a `MenuBarExtra` renders as a non-interactive, grayed-out label — good for status display
   - A per-minute timer ensures status transitions (e.g., entering/leaving working hours, approaching next reminder) happen without user interaction
 ---
+
+## 2026-02-18 - US-002: Remove Redundant Notification Cleanup on Terminate (fix-notifications PRD)
+- What was implemented:
+  - Removed the `willTerminateNotification` observer from `NotificationManager.init()` that was double-clearing notifications on app termination
+  - The Quit button in `ExerciseSnackApp.swift` already calls `clearAllNotifications()` explicitly before `NSApplication.shared.terminate(nil)`
+  - Force quit / system shutdown scenarios are safe because US-001 ensures the app reschedules notifications on next launch
+- Files changed:
+  - `ExerciseSnack/NotificationManager.swift` (modified — removed willTerminateNotification observer)
+  - `.chief/prds/fix-notifications/prd.json` (updated — US-002 passes)
+- **Learnings for future iterations:**
+  - When notification cleanup happens in multiple places (observer + explicit call), check for redundancy — the explicit call in the Quit handler is sufficient
+  - The app's launch-time rescheduling (US-001's `requestPermissionAndSchedule`) makes terminate-time cleanup less critical since stale notifications get replaced on next launch
+---
